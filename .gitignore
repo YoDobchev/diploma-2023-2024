@@ -1,1 +1,5 @@
 node_modules/
+dist/
+.env
+public/styles/*.css
+public/styles/*.css.map

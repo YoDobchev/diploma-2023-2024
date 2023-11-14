@@ -1,10 +1,9 @@
 import Jimp from 'jimp';
 
-
 const options = [
     // {apply: "hue", params: [70] },
-    { apply: "red", params: [10] },
-    { apply: "brighten", params: [-5] },
+    { apply: "red", params: [60] },
+    { apply: "brighten", params: [20] },
 ];
 
 Jimp.read("img/input.jpg", (err: any, lenna: any) => {
