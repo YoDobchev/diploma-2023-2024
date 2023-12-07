@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/styles/board.css">
+    <title>Document</title>
+</head>
+<body>
+    <% threads.forEach((thread) => { %>
+        <div class="thread-row">
+            <a href="/<%= board_id %>/<%= thread.id %>"><%= thread.id %></a> 
+        </div>
+    <% }); %>
+    <button id="create-thread">+</button>
+    <script>
+        function generateId() {
+            const set = "0123456789";
+            let id = "";
+
+            for (let i = 0; i < 8; i++) {
+                const randomi = Math.floor(Math.random() * set.length);
+                id += set[randomi];
+            }
+
+            return id;
+        }
+
+        document.getElementById('create-thread').addEventListener('click', () => {
+            const id = generateId();
+            
+            const data = {
+                id: id
+            }
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.status == 200) {
+                    // location.reload()
+                    let newThreadRow = document.createElement('a');
+                    newThreadRow.href = `/<%= board_id %>/${id}`;
+                    newThreadRow.textContent = id;
+                    document.querySelector('.thread-row').appendChild(newThreadRow);
+                }
+            })
+        });
+    </script>
+</body>
+</html>

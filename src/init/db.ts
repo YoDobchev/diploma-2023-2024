@@ -1,13 +1,18 @@
 import { Sequelize } from 'sequelize-typescript';
-import Lul from '../models/lul.model';
+import Boards from '../models/Boards.model';
+import Threads from '../models/Threads.model';
+import Posts from '../models/Posts.model';
 
 export const db = new Sequelize({
-    database: 'lol',
+    database: process.env.DB,
     dialect: 'postgres',
-    username: process.env.USER,
-    password: process.env.PASSWORD,
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    benchmark: true,
 });
 
 db.addModels([
-    Lul
+    Boards,
+    Threads,
+    Posts,
 ]);

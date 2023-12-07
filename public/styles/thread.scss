@@ -1,0 +1,47 @@
+$input-label-height: 25px;
+
+#image {
+    display: none;
+}
+
+#image-icon {
+    display: block;
+    background-image: url('/public/icons/image-selection.svg');
+    background-size: cover;
+    cursor: pointer;
+    width: $input-label-height;
+    height: $input-label-height;
+}
+
+#imageForm { 
+    display: flex;
+    flex-direction: row;
+    input {
+        height: calc($input-label-height - 5px);
+    }
+}
+
+#image-icon img {
+    cursor: pointer;
+    width: $input-label-height;
+    height: $input-label-height;
+}
+
+#image_view {
+    transition: filter 1s ease;
+    filter: blur(0px);
+
+    &.blur {
+        filter: blur(20px);
+    }
+}
+
+.posts {
+    display: flex;
+    flex-direction: column;
+}
+
+.post {
+    display: flex;
+    flex-direction: row;
+}

@@ -1,13 +1,15 @@
-.board-row {
+body {
     display: flex;
-    flex-direction: row;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
 }
-p {
-    margin: 0;
-}
-.posts {
+
+.thread-row {
     display: flex;
     flex-direction: column;
+}
+
+p {
+    margin: 0;
 }

@@ -3,3 +3,4 @@ dist/
 .env
 public/styles/*.css
 public/styles/*.css.map
+public/images/

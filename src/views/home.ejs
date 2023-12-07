@@ -8,10 +8,11 @@
     <title>Document</title>
 </head>
 <body>
-    <% shekels.forEach((shekel) => { %>
-        <p>
-            shekels: <%= shekel.shekel %>
-        </p>
+    <% boards.forEach((board) => { %>
+        <div class="board-row">
+            <a href="/<%= board.id %>"><%= board.id %></a> 
+            <p>  - <%= board.description %></p>
+        </div>
     <% }); %>
 </body>
 </html>

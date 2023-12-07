@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/styles/thread.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="posts">
+    <% posts.forEach((post) => { %>
+        <div class="post">
+            <img src="/public/images/archived/<%= post.image %>" alt="">
+            <p><%= post.text %></p>
+        </div>
+    <% }); %>
+    </div>
+    <form id="imageForm" enctype="multipart/form-data">
+        <input id="image" type="file" name="image" accept="image/png, image/jpeg"/>
+        <label id="image-icon" for="image"></label>
+        <input id="postText" type="text">
+    </form>
+    <input type="range" name="" id="hue-slider">
+    <img id="image_view" src="" alt="">
+    <script>
+        let fileExt;
+
+        function generateSessionId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Store the session ID in session storage
+        if (!sessionStorage.getItem('session_id')) {
+            sessionStorage.setItem('session_id', generateSessionId());
+        }
+
+        // const sessionId = sessionStorage.getItem('session_id');
+        // fetch('https://your-backend-endpoint.com/data', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Session-ID': sessionId // Include the session ID in the request header
+        //     },
+        //     body: JSON.stringify({ /* your data */ })
+        // })
+        // .then(response => response.json())
+        // .then(data => console.log(data))
+        // .catch(error => console.error('Error:', error));
+        document.getElementById('postText').addEventListener('keydown', (ev) => {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                ev.preventDefault();
+                // console.log(document.getElementById('postText').value)
+                const data = {
+                    postId: generateSessionId(),
+                    text: document.getElementById('postText').value,
+                    ext: fileExt,
+                }
+                fetch(`<%= thread %>/createPost`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Session-ID': sessionStorage.getItem('session_id')
+                    },
+                    body: JSON.stringify(data)
+                })
+                sessionStorage.setItem('session_id', generateSessionId());
+
+
+                // .then(response => response.json())
+                // .then(data => {
+                //     document.getElementById('image_view').src = `${data.filepath}?${generateSessionId()}`;
+                // });
+            };
+        });
+        
+        document.getElementById('image').addEventListener('input', () => {
+            const data = new FormData(document.getElementById('imageForm'));
+            fileExt = document.getElementById('image').files[0].name.split('.').pop();
+            console.log(document.getElementById('image').files[0].name)
+            console.log(sessionStorage.getItem('session_id'))
+            fetch(`<%= thread %>/upload`, {
+                method: 'POST',
+                headers: {
+                    'Session-ID': sessionStorage.getItem('session_id')
+                },
+                body: data
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('image_view').src = `${data.filepath}?${generateSessionId()}`;
+            });
+        });
+
+        document.getElementById('hue-slider').addEventListener('change', () => {
+            document.getElementById('image_view').classList.add('blur');
+            const data = {
+                hue: document.getElementById('hue-slider').value,
+                ext: fileExt,
+            }
+            fetch(`<%= thread %>/filter`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Session-ID': sessionStorage.getItem('session_id')
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('image_view').src = `${data.filepath}?${generateSessionId()}`;
+                document.getElementById('image_view').classList.remove('blur');
+            })
+        });
+
+        </script>
+</body>
+</html>
