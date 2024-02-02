@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import Thread from './thread';
-import { db } from '../init/db';
 import Boards from '../models/Boards.model';
 import Threads from '../models/Threads.model'; 
 
@@ -21,7 +20,8 @@ Board.get('/:board', async (req, res) => {
     }
 
     const threads = await Threads.findAll({where: { board_id }})
-    res.render('board.ejs', { board_id: board_id, threads: threads })
+    console.log(req.session.username)
+    res.render('board.ejs', { board_id: board_id, threads: threads, user: req.session.username })
 });
 
 Board.post('/:board', async (req, res) => {
@@ -32,8 +32,6 @@ Board.post('/:board', async (req, res) => {
   
   await Threads.create(newThread);
   res.status(200).send("Thread created successfully");
-  // await Threads.create({ id, board_id } as Partial<Threads>);
-
 });
 
 export default Board;

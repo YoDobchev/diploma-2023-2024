@@ -4,6 +4,7 @@ import path from 'path';
 import Jimp from "jimp";
 import fs from 'fs';
 import Posts from "../models/Posts.model";
+import { createPost, findPostsByThreadId } from "../functions/common";
 
 const Thread = Router({ mergeParams: true });
 
@@ -31,8 +32,14 @@ interface ThreadRequest extends Request {
 
 Thread.get('/:thread', async (req: ThreadRequest, res) => {
     const { board, thread } = req.params;
-    const posts = await Posts.findAll({where: {thread_id: thread}});
-    res.render('thread.ejs', {board: board, thread: thread, posts: posts});
+    console.log(req.session.id)
+    // const posts = await Posts.findAll({where: {thread_id: thread}});
+    const posts = await findPostsByThreadId(thread);
+    res.render('thread.ejs', {board: board, thread: thread, posts: posts, user: req.session.username});
+    // posts.forEach(post => {
+    //     console.log(post.images)
+
+    // });
 });
 
 Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
@@ -75,14 +82,15 @@ Thread.post('/:thread/createPost', async (req, res) => {
         await fs.promises.rename(unfiltered, outputFile);
     }
 
-    const newPost: any = {
-        id: req.body.postId,
-        thread_id: req.params.thread,
-        image: `${session_id}.${ext}`,
-        text: req.body.text
-    }
+    // const newPost: any = {
+    //     id: req.body.postId,
+    //     thread_id: req.params.thread,
+    //     // image: `${session_id}.${ext}`,
+    //     text: req.body.text
+    // }
+    await createPost(req.params.thread, req.body.text, 'cat', 'car');
 
-    await Posts.create(newPost);
+    // await Posts.create(newPost);
 });
 
 export default Thread;

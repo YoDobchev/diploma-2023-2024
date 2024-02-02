@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="register-form">
+        <h3>REGISTER</h3>
+        <input type="text" name="" id="username">
+        <input type="password" name="" id="password">
+        <input type="password" name="" id="retyped-password">
+        <div id="errors"></div>
+        <button id="submit" onclick="">submit</button>
+    </div>
+    <script>
+        function displayErr(errMessage) {
+            const errors = document.querySelectorAll('.error-msg');
+            const p = document.createElement('p');
+            p.classList.add('error-msg');
+            p.innerText = errMessage;
+            const error_container = document.getElementById('errors');
+            error_container.appendChild(p);
+        }
+
+        function AreRegisterDetailsCorrect() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const retyped_password = document.getElementById('retyped-password').value;
+            if ((username == null || username == '') ||
+                (password == null || password == '') ||
+                (retyped_password == null || retyped_password == '')
+            ) {
+                displayErr('Please fill all fields in!');
+                return false;
+            }
+            if (password !== retyped_password) {
+                displayErr('Passwords do not match in both fields');
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById('submit').addEventListener('click', async (ev) => {
+            ev.preventDefault();
+            const error_container = document.getElementById('errors');
+            error_container.innerHTML = '';
+            if (!AreRegisterDetailsCorrect()) return;
+
+            const data = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+            }
+
+            const res = await fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                window.location='/login'
+            } else {
+                displayErr('Username already exists!');
+            }
+        });
+    </script>
+    <style>
+        #register-form {
+            display: flex;
+            flex-direction: column;
+            width: 30vw;
+        }
+
+        #register-form input {
+            margin-bottom: 5px;
+        }
+
+        #errors {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #errors p {
+            color: red;
+        }
+        .error-msg {
+            margin: 0;
+        }
+    </style>
+</body>
+</html>

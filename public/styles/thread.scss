@@ -13,6 +13,15 @@ $input-label-height: 25px;
     height: $input-label-height;
 }
 
+#reply-icon {
+    background-image: url('/public/icons/reply.svg');
+    background-size: cover;
+    cursor: pointer;
+    width: $input-label-height;
+    height: $input-label-height;
+    margin-left: 5px;
+}
+
 #imageForm { 
     display: flex;
     flex-direction: row;
@@ -42,6 +51,14 @@ $input-label-height: 25px;
 }
 
 .post {
+    border: 1px black solid;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    & img {
+        max-height: 100px;
+    }
+    & img:hover {
+        max-height: 500px;
+    }
 }

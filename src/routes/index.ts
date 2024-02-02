@@ -1,6 +1,8 @@
 import express, {Express} from 'express';
 import path from 'path';
 import 'dotenv/config';
+import { db } from '../init/db';
+import session from 'express-session';
 
 const app: Express = express();
 
@@ -14,14 +16,26 @@ app.use("/public", express.static("public", {
         }
     }
 }));
+app.use(session({
+    secret: process.env.SECRET!,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+}));
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(process.env.ROOTDIR, 'src', 'views'));
 
 import Home from "./home";
 import Board from "./board";
+import Login from './login';
+import Register from './register';
 app.use('/', Home);
+app.use('/login', Login);
+app.use('/register', Register);
 app.use('/', Board);
-// app.use('/:board_id/:thread_id', Board);
+
+db.authenticate();
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');

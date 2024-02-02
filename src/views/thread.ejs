@@ -9,21 +9,18 @@
 </head>
 <body>
     <div class="posts">
-    <% posts.forEach((post) => { %>
-        <div class="post">
-            <img src="/public/images/archived/<%= post.image %>" alt="">
-            <p><%= post.text %></p>
-        </div>
-    <% }); %>
     </div>
     <form id="imageForm" enctype="multipart/form-data">
         <input id="image" type="file" name="image" accept="image/png, image/jpeg"/>
         <label id="image-icon" for="image"></label>
         <input id="postText" type="text">
+        <input type="range" name="" id="hue-slider">
+        <img id="image_view" src="" alt="">
+        <button type="submit">Upload</button>
     </form>
-    <input type="range" name="" id="hue-slider">
-    <img id="image_view" src="" alt="">
     <script>
+        const posts = <%- JSON.stringify(posts) %>;
+
         let fileExt;
 
         function generateSessionId() {
@@ -38,7 +35,55 @@
             sessionStorage.setItem('session_id', generateSessionId());
         }
 
+        function nestPosts(posts) {
+            const postMap = new Map();
+
+            posts.forEach(post => postMap.set(post.id, { ...post, replies: [] }));
+
+            posts.forEach(post => {
+                if (post.reply_to_id) {
+                    postMap.get(post.reply_to_id).replies.push(postMap.get(post.id));
+                }
+            });
+
+            return Array.from(postMap.values()).filter(post => post.reply_to_id === null);
+        }
+
+        function renderPosts(posts, depth = 0) {
+            posts.forEach(post => {
+                const postsContainer = document.querySelector('.posts');
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post';
+                postDiv.id = post.id;
+                postDiv.style.marginLeft = `${depth * 20}px`;
+
+                const p = document.createElement('p');
+                p.textContent = post.text;
+
+                const replyIcon = document.createElement('span');
+                replyIcon.id = 'reply-icon';
+
+                if (post.images && post.images.length > 0) {
+                    const img = document.createElement('img');
+                    img.src = `/public/images/archived/${post.images[0].path}`;
+                    postDiv.appendChild(img);
+                }
+                postDiv.appendChild(p);
+                postDiv.appendChild(replyIcon);
+                postsContainer.appendChild(postDiv);
+
+                if (post.replies && post.replies.length > 0) {
+                    renderPosts(post.replies, depth + 1);
+                }
+            });
+        }
+
+        posts.sort((a, b) => new Date(a.createdat) - new Date(b.createdat));
+        const nestedPosts = nestPosts(posts);
+        renderPosts(nestedPosts);
+
         // const sessionId = sessionStorage.getItem('session_id');
+        // console.log(sessionId)
         // fetch('https://your-backend-endpoint.com/data', {
         //     method: 'POST',
         //     headers: {
@@ -50,10 +95,16 @@
         // .then(response => response.json())
         // .then(data => console.log(data))
         // .catch(error => console.error('Error:', error));
+        document.querySelectorAll('#reply-icon').forEach(reply_btn => {
+            reply_btn.addEventListener('click', () => {
+                console.log(reply_btn.parentElement.id)
+            });
+        });
+
         document.getElementById('postText').addEventListener('keydown', (ev) => {
             if (event.key === 'Enter' || event.keyCode === 13) {
                 ev.preventDefault();
-                // console.log(document.getElementById('postText').value)
+                console.log(document.getElementById('postText').value)
                 const data = {
                     postId: generateSessionId(),
                     text: document.getElementById('postText').value,
@@ -66,7 +117,7 @@
                         'Session-ID': sessionStorage.getItem('session_id')
                     },
                     body: JSON.stringify(data)
-                })
+                });
                 sessionStorage.setItem('session_id', generateSessionId());
 
 

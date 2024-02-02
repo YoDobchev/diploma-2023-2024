@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="login-form">
+        <h3>LOGIN</h3>
+        <input type="text" name="" id="username">
+        <input type="password" name="" id="password">
+        <div id="errors"></div>
+        <button id="submit" onclick="">submit</button>
+    </div>
+    <script>
+        function displayErr(errMessage) {
+            const errors = document.querySelectorAll('.error-msg');
+            const p = document.createElement('p');
+            p.classList.add('error-msg');
+            p.innerText = errMessage;
+            const error_container = document.getElementById('errors');
+            error_container.appendChild(p);
+        }
+
+        function AreloginDetailsCorrect() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if ((username == null || username == '') ||
+                (password == null || password == '')
+                ) {
+                displayErr('Please fill all fields in!');
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById('submit').addEventListener('click', async (ev) => {
+            ev.preventDefault();
+            const error_container = document.getElementById('errors');
+            error_container.innerHTML = '';
+            if (!AreloginDetailsCorrect()) return;
+            
+            const data = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+            }
+            
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                const username = document.getElementById('username').value;
+                document.body.innerHTML = '';
+                const p = document.createElement('p');
+                p.innerText = `Logged in as ${username}.`;
+                document.body.appendChild(p)
+            } else {
+                displayErr("Invalid credintials!")
+            }
+        });
+        </script>
+    <style>
+        #login-form {
+            display: flex;
+            flex-direction: column;
+            width: 30vw;
+        }
+        
+        #login-form input {
+            margin-bottom: 5px;
+        }
+        
+        #errors {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #errors p {
+            color: red;
+        }
+        .error-msg {
+            margin: 0;
+        }
+    </style>
+</body>
+</html>

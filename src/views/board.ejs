@@ -8,12 +8,25 @@
     <title>Document</title>
 </head>
 <body>
-    <% threads.forEach((thread) => { %>
+    <p><%= user %></p>
+    <div class="threads">
+        <div id="create-thread">
+            <input type="text">
+            <div id="post-container">
+                <div class="image-label-wrapper">
+                    <label for="image-input" id="image-input-label"></label>
+                </div>
+                <input id="image-input" type="file" name="image-input" accept="image/png, image/jpeg"/>
+                <input type="text" name="" id="">
+            </div>
+            <p id="create-thread-button">NEW THREAD</p>
+        </div>
+        <% threads.forEach((thread) => { %>
         <div class="thread-row">
             <a href="/<%= board_id %>/<%= thread.id %>"><%= thread.id %></a> 
         </div>
-    <% }); %>
-    <button id="create-thread">+</button>
+        <% }); %>
+    </div>
     <script>
         function generateId() {
             const set = "0123456789";
@@ -27,7 +40,7 @@
             return id;
         }
 
-        document.getElementById('create-thread').addEventListener('click', () => {
+        document.getElementById('create-thread-button').addEventListener('click', () => {
             const id = generateId();
             
             const data = {
@@ -40,13 +53,16 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => {
-                if (response.status == 200) {
+            .then(res => {
+                if (res.status == 200) {
                     // location.reload()
+                    var div = document.createElement("div");
+                    div.className = "thread-row";
                     let newThreadRow = document.createElement('a');
                     newThreadRow.href = `/<%= board_id %>/${id}`;
                     newThreadRow.textContent = id;
-                    document.querySelector('.thread-row').appendChild(newThreadRow);
+                    div.appendChild(newThreadRow);
+                    document.querySelector('.threads').appendChild(div);
                 }
             })
         });

@@ -2,6 +2,8 @@ import { Sequelize } from 'sequelize-typescript';
 import Boards from '../models/Boards.model';
 import Threads from '../models/Threads.model';
 import Posts from '../models/Posts.model';
+import Images from '../models/Images.model';
+import Users from '../models/Users.model';
 
 export const db = new Sequelize({
     database: process.env.DB,
@@ -15,4 +17,8 @@ db.addModels([
     Boards,
     Threads,
     Posts,
+    Images,
+    Users,
 ]);
+
+db.authenticate();

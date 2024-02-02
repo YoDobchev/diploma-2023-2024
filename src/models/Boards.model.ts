@@ -5,6 +5,7 @@ import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript
   schema: 'public',
   timestamps: false,
 })
+
 class Boards extends Model<Boards> {
   @PrimaryKey
   @Column({
@@ -15,7 +16,7 @@ class Boards extends Model<Boards> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false    
+    allowNull: false
   })
   declare description: string;
 }
