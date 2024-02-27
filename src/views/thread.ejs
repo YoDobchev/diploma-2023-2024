@@ -9,7 +9,18 @@
 </head>
 <body>
     <%- include('partials/navbar') %>
-
+    <div class="overlay"></div>
+    <div class="imageModal">
+        <div class="model-icon-container">
+            <div>
+                <span class="edit-image"></span>
+            </div>
+            <span class="close" onclick="unFocusImage()"></span>
+        </div>
+        <div class="image-container">
+            <img src="" alt="">
+        </div>
+    </div>
     <div class="posts">
         <div class="post">
             <div class="post-content">
@@ -19,8 +30,8 @@
                 </div>
                 <p class="post-text">pishkaaaaaa</p>
 
-                <div class="post-image">
-                    <img class="post-image-src" src="/public/images/archived/040729e7-4515-49ce-b6a6-e6c864e915c8.jpg" alt="">
+                <div class="post-image" onclick="focusImage(this)">
+                    <img class="post-image-src" src="/public/images/temp/original/input.jpg" alt="">
                     <span class="focus-image"></span>
                 </div>
                 
@@ -28,6 +39,11 @@
                 <div class="icon-bar">
                     <span class="heart"></span>
                     <span class="reply"></span>
+                </div>
+            </div>
+            <div class="expand">
+                <div>
+                    <span></span>
                 </div>
             </div>
         </div>
@@ -55,6 +71,17 @@
         const posts = <%- JSON.stringify(posts) %>;
 
         let fileExt;
+
+        const focusImage = (div) => {
+            const modal = document.querySelector('.imageModal');
+            document.querySelector('.overlay').style.display = 'block';
+            modal.style.display = 'flex';
+            modal.querySelector('img').src = div.firstElementChild.src;
+        }
+        const unFocusImage = () => {
+            document.querySelector('.imageModal').style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+        }
 
         function generateSessionId() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
