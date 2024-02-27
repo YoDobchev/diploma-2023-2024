@@ -3,4 +3,6 @@ dist/
 .env
 public/styles/*.css
 public/styles/*.css.map
+public/styles/partials/*.css
+public/styles/partials/*.css.map
 public/images/

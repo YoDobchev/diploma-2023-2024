@@ -8,16 +8,49 @@
     <title>Document</title>
 </head>
 <body>
+    <%- include('partials/navbar') %>
+
     <div class="posts">
+        <div class="post">
+            <div class="post-content">
+                <div class="post-header">
+                    <h2 class="username">gosho ebacha</h2>
+                    <h2 class="date">• feb2</h2>
+                </div>
+                <p class="post-text">pishkaaaaaa</p>
+
+                <div class="post-image">
+                    <img class="post-image-src" src="/public/images/archived/040729e7-4515-49ce-b6a6-e6c864e915c8.jpg" alt="">
+                    <span class="focus-image"></span>
+                </div>
+                
+                <hr>
+                <div class="icon-bar">
+                    <span class="heart"></span>
+                    <span class="reply"></span>
+                </div>
+            </div>
+        </div>
     </div>
-    <form id="imageForm" enctype="multipart/form-data">
-        <input id="image" type="file" name="image" accept="image/png, image/jpeg"/>
-        <label id="image-icon" for="image"></label>
-        <input id="postText" type="text">
-        <input type="range" name="" id="hue-slider">
-        <img id="image_view" src="" alt="">
-        <button type="submit">Upload</button>
-    </form>
+    <div id="new-post-container">
+        <div>
+            <form id="imageForm" enctype="multipart/form-data">
+                <input id="image" type="file" name="image" accept="image/png, image/jpeg"/>
+                <label id="image-icon" for="image"></label>
+                <input id="postText" type="text">
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+        <div>
+            <img id= "image_view" src="" alt="">
+
+        </div>
+        <!-- <form id="imageForm" enctype="multipart/form-data"> -->
+        <div>
+            <input type="range" name="" id="hue-slider">
+        </div>
+        <!-- </form> -->
+    </div>
     <script>
         const posts = <%- JSON.stringify(posts) %>;
 
