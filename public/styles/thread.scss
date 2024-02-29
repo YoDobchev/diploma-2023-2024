@@ -29,9 +29,7 @@ p {
     position: fixed;
     // width: 60vw;
     // height: 3;
-    // background-color: #2E2E2E;
-    // border: #FFC3BA px solid;
-
+    background-color: #272727;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -196,6 +194,14 @@ p {
 .post-header {
     display: flex;
     flex-direction: row;
+    align-items: center ;
+    & .user {
+        background-image: url('/public/icons/user.svg');
+        background-size: cover;
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
 }
 
 .username {

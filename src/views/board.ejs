@@ -8,6 +8,7 @@
     <title>Document</title>
 </head>
 <body>
+    <%- include('partials/navbar') %>
     <p><%= user %></p>
     <div class="threads">
         <div id="create-thread">
@@ -23,7 +24,7 @@
         </div>
         <% threads.forEach((thread) => { %>
         <div class="thread-row">
-            <a href="/<%= board_id %>/<%= thread.id %>"><%= thread.id %></a> 
+            <a href="/<%= board %>/<%= thread.id %>"><%= thread.id %></a> 
         </div>
         <% }); %>
     </div>
@@ -59,7 +60,7 @@
                     var div = document.createElement("div");
                     div.className = "thread-row";
                     let newThreadRow = document.createElement('a');
-                    newThreadRow.href = `/<%= board_id %>/${id}`;
+                    newThreadRow.href = `/<%= board %>/${id}`;
                     newThreadRow.textContent = id;
                     div.appendChild(newThreadRow);
                     document.querySelector('.threads').appendChild(div);

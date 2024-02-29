@@ -5,7 +5,10 @@
         <span class="location" onclick="window.location='/'">home</span>
         <span>/</span>
         <span class="location" onclick="window.location='/<%= board %>'"><%= board %></span>
-        <span>/</span>
-        <span class="location" onclick="window.location='/<%= board %>/<%= thread %>'"><%= thread %></span>
+        <% var safeThread = typeof thread !== 'undefined' ? thread : null; %>
+        <% if (safeThread) { %>
+            <span>/</span>
+            <span class="location" onclick="window.location='/<%= board %>/<%= thread %>'"><%= thread %></span>
+        <% } %>
     </div>
 </div>

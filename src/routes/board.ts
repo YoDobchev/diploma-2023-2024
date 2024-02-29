@@ -10,7 +10,7 @@ Board.use('/:board', Thread);
 Board.get('/:board', async (req, res) => {
     const board_id = req.params.board;
     const board = await Boards.findOne({ where: { id: board_id } });
-    
+
     if (!board) {
       res
         .status(404)
@@ -21,7 +21,7 @@ Board.get('/:board', async (req, res) => {
 
     const threads = await Threads.findAll({where: { board_id }})
     console.log(req.session.username)
-    res.render('board.ejs', { board_id: board_id, threads: threads, user: req.session.username })
+    res.render('board.ejs', { board: board_id, threads: threads, user: req.session.username })
 });
 
 Board.post('/:board', async (req, res) => {
