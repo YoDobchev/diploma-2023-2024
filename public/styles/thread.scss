@@ -180,6 +180,12 @@ input::-webkit-inner-spin-button {
         width: 100%;
         height: 100%;
         & img {
+            transition: filter 1s ease;
+            filter: blur(0px);
+
+            &.blur {
+                filter: blur(20px);
+            }
             // min-height: 100%;
             // max-height: 50vh;
             max-width: 100%;
@@ -218,15 +224,6 @@ input::-webkit-inner-spin-button {
     cursor: pointer;
     width: $input-label-height;
     height: $input-label-height;
-}
-
-#image_view {
-    transition: filter 1s ease;
-    filter: blur(0px);
-
-    &.blur {
-        filter: blur(20px);
-    }
 }
 
 .posts {

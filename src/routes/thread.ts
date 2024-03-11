@@ -52,21 +52,33 @@ Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
 
 
 Thread.patch('/:thread/filter', async (req, res) => {
-    // console.log(req.body.hue)
+    const imageId = req.body.imageId;
+    console.log(imageId)
+    const imageExt = req.body.imageExt;
+    const filters = req.body.filters;
+
     const options = [
-        { apply: 'hue', params: [Number(req.body.hue)] }
+        { apply: 'lighten', params: [Number(filters.LIGHTEN)] },
+        { apply: 'brighten', params: [Number(filters.BRIGHTEN)] },
+        // { apply: 'darken', params: [Number(filters.DARKEN)] },
+        // { apply: 'saturate', params: [Number(filters.SATURATE)] },
+        // { apply: 'saturate', params: [Number(filters.DESATURATE)] },
+        // { apply: 'greyscale', params: [Number(filters.GRAYSCALE)] },
+        // { apply: 'hue', params: [Number(filters.HUE)] },
+        // { apply: 'tint', params: [Number(filters.TINT)] },
+        // { apply: 'shade', params: [Number(filters.SHADE)] },
+        // { apply: 'red', params: [Number(filters.RED)] },
+        // { apply: 'green', params: [Number(filters.GREEN)] },
+        // { apply: 'blue', params: [Number(filters.BLUE)] },
     ]
-    const session_id = req.headers['session-id'];
-    const ext = req.body.ext;
-    const imagePath = `public/images/temp/original/${session_id}.${ext}`;
-    const outputPath = `public/images/temp/filtered/${session_id}.${ext}`;
+
+    const imagePath = `public/images/temp/original/${imageId}.${imageExt}`;
+    const outputPath = `public/images/temp/filtered/${imageId}.${imageExt}`;
 
     const image = await Jimp.read(imagePath);
     // @ts-ignore
     await image.color(options).writeAsync(outputPath);
-    res.json({ filepath: '/public/images/temp/filtered/' + session_id + '.' + ext})
-        // .set('Cache-Control', 'no-cache');
-
+    res.json({ filepath: '/public/images/temp/filtered/' + imageId + '.' + imageExt})
 });
 
 Thread.post('/:thread/createPost', async (req, res) => {

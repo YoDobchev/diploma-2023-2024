@@ -46,7 +46,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
         </div>
         <div class="main">
             <div class="image-container">
-                <img src="" alt="">
+                <img class="post-image-full" src="" alt="">
             </div>
             <div class="model-filter-settings">
 
@@ -104,28 +104,6 @@ const nestedPosts = nestPosts(simplifiedPosts)
             </div>
             
         </div> -->
-        <!-- <div class="post">
-            <div class="post-content">
-                <div class="post-header">
-                    <h2 class="username">Replying to gosho ebacha...</h2>
-                </div>
-                <textarea placeholder="Type something..." required></textarea>
-
-                <div class="post-image" onclick="focusImage(this)">
-                    <img class="post-image-src" src="/public/images/temp/original/input.jpg" alt="">
-                    <span class="focus-image"></span>
-                </div>
-
-                <hr>
-
-                <div class="icon-bar">
-                    <input id="image-input" type="file" name="image-input" accept="image/png, image/jpeg"/>
-                    <label id="image-icon" for="image-input">
-                        <span class="image-selection"></span>
-                    </label>
-                </div>
-            </div>
-        </div> -->
         <div class="no-posts">
             <p onclick="createNewPost()">lol</p>
         </div>
@@ -156,11 +134,11 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 %>
                 <div class="post-image-container">
                     <div class="post-image" onclick="focusImage(this)">
-                    <img class="post-image-src" src="/<%= post.images[0] %>" alt="">
+                    <img class="post-image-src" src="/<%= post.images[0] %>">
                     <span class="focus-image"></span>
                 </div>
                 </div>
-                
+
                 <%
                     }
                 %>
@@ -196,21 +174,37 @@ const nestedPosts = nestPosts(simplifiedPosts)
         
     </div>
     <script>
-        var imageId, imageExt, replyToId;
+        var imageId, imageExt;
 
        const filterSettings = [
-            { label: 'LIGHTEN', type: 'lighten', min: 0, max: 100, value: 50 },
-            { label: 'HUE', type: 'hue', min: 0, max: 360, value: 180 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
-            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'LIGHTEN', min: 0, max: 100, value: 0 },
+            { label: 'BRIGHTEN', min: 0, max: 100, value: 0 },
+            { label: 'DARKEN', min: 0, max: 100, value: 0 },
+            { label: 'DESATURATE', min: 0, max: 100, value: 0 },
+            { label: 'SATURATE', min: 0, max: 100, value: 0 },
+            { label: 'GRAYSCALE', min: 0, max: 100, value: 0 },
+            { label: 'HUE', min: 0, max: 360, value: 0 },
+            { label: 'TINT', min: 0, max: 100, value: 0 },
+            { label: 'SHADE', min: 0, max: 100, value: 0 },
+            { label: 'RED', min: 0, max: 255, value: 0 },
+            { label: 'GREEN', min: 0, max: 255, value: 0 },
+            { label: 'BLUE', min: 0, max: 255, value: 0 },
         ];
+        
+        var filters = {
+            LIGHTEN: 0,
+            BRIGHTEN: 0,
+            DARKEN: 0,
+            DESATURATE: 0,
+            SATURATE: 0,
+            GRAYSCALE: 0,
+            HUE: 0,
+            TINT: 0,
+            SHADE: 0,
+            RED: 0,
+            GREEN: 0,
+            BLUE: 0,
+        };
 
         const changeRangeInputGradient = (input) => {
             let value = (input.value - input.min) / (input.max - input.min) * 100;
@@ -237,8 +231,30 @@ const nestedPosts = nestPosts(simplifiedPosts)
             input.setAttribute('min', filterSetting.min);
             input.setAttribute('max', filterSetting.max);
             input.setAttribute('value', filterSetting.value);
-            inputContainer.appendChild(input);
             changeRangeInputGradient(input);
+            input.addEventListener('change', () => {
+                filters[filterSetting.label] = parseInt(input.value);                
+                const data = {
+                    filters: filters,
+                    imageId: imageId,
+                    imageExt: imageExt,
+                };
+
+                document.querySelector('.post-image-full').classList.add('blur');
+                fetch(`<%= thread %>/filter`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector('.post-image-full').src = `${data.filepath}?${generateId()}`;
+                    document.querySelector('.post-image-full').classList.remove('blur');
+                });
+            });
+            inputContainer.appendChild(input);
 
             const pValue = document.createElement('p');
             pValue.textContent = filterSetting.value;
@@ -455,103 +471,6 @@ const nestedPosts = nestPosts(simplifiedPosts)
         if (!sessionStorage.getItem('session_id')) {
             sessionStorage.setItem('session_id', generateId());
         }
-
-        // function nestPosts(posts) {
-        //     const postMap = new Map();
-
-        //     posts.forEach(post => postMap.set(post.id, { ...post, replies: [] }));
-
-        //     posts.forEach(post => {
-        //         if (post.reply_to_id) {
-        //             postMap.get(post.reply_to_id).replies.push(postMap.get(post.id));
-        //         }
-        //     });
-
-        //     return Array.from(postMap.values()).filter(post => post.reply_to_id === null);
-        // }
-
-        // function renderPosts(posts, depth = 0) {
-        //     posts.forEach(post => {
-        //         const postsContainer = document.querySelector('.posts');
-        //         const postDiv = document.createElement('div');
-        //         postDiv.className = 'post';
-        //         postDiv.id = post.id;
-        //         postDiv.style.marginLeft = `${depth * 20}px`;
-
-        //         const p = document.createElement('p');
-        //         p.textContent = post.text;
-
-        //         const replyIcon = document.createElement('span');
-        //         replyIcon.id = 'reply-icon';
-
-        //         if (post.images && post.images.length > 0) {
-        //             const img = document.createElement('img');
-        //             img.src = `/public/images/archived/${post.images[0].path}`;
-        //             postDiv.appendChild(img);
-        //         }
-        //         postDiv.appendChild(p);
-        //         postDiv.appendChild(replyIcon);
-        //         postsContainer.appendChild(postDiv);
-
-        //         if (post.replies && post.replies.length > 0) {
-        //             renderPosts(post.replies, depth + 1);
-        //         }
-        //     });
-        // }
-
-        // posts.sort((a, b) => new Date(a.createdat) - new Date(b.createdat));
-        // const nestedPosts = nestPosts(posts);
-        // renderPosts(nestedPosts)
-
-        // document.getElementById('postText').addEventListener('keydown', (ev) => {
-        //     if (event.key === 'Enter' || event.keyCode === 13) {
-        //         ev.preventDefault();
-        //         console.log(document.getElementById('postText').value)
-        //         const data = {
-        //             postId: generateId(),
-        //             text: document.getElementById('postText').value,
-        //             ext: fileExt,
-        //         }
-        //         fetch(`<%= thread %>/createPost`, {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'Session-ID': sessionStorage.getItem('session_id')
-        //             },
-        //             body: JSON.stringify(data)
-        //         });
-        //         sessionStorage.setItem('session_id', generateId());
-
-
-        //         // .then(response => response.json())
-        //         // .then(data => {
-        //         //     document.getElementById('image_view').src = `${data.filepath}?${generateId()}`;
-        //         // });
-        //     };
-        // });
-        
-
-        document.getElementById('hue-slider').addEventListener('change', () => {
-            document.getElementById('image_view').classList.add('blur');
-            const data = {
-                hue: document.getElementById('hue-slider').value,
-                ext: fileExt,
-            }
-            fetch(`<%= thread %>/filter`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Session-ID': sessionStorage.getItem('session_id')
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('image_view').src = `${data.filepath}?${generateId()}`;
-                document.getElementById('image_view').classList.remove('blur');
-            })
-        });
-
         </script>
 </body>
 </html>
