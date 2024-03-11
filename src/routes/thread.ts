@@ -53,24 +53,24 @@ Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
 
 Thread.patch('/:thread/filter', async (req, res) => {
     const imageId = req.body.imageId;
-    console.log(imageId)
     const imageExt = req.body.imageExt;
-    const filters = req.body.filters;
 
-    const options = [
-        { apply: 'lighten', params: [Number(filters.LIGHTEN)] },
-        { apply: 'brighten', params: [Number(filters.BRIGHTEN)] },
-        // { apply: 'darken', params: [Number(filters.DARKEN)] },
-        // { apply: 'saturate', params: [Number(filters.SATURATE)] },
-        // { apply: 'saturate', params: [Number(filters.DESATURATE)] },
-        // { apply: 'greyscale', params: [Number(filters.GRAYSCALE)] },
-        // { apply: 'hue', params: [Number(filters.HUE)] },
-        // { apply: 'tint', params: [Number(filters.TINT)] },
-        // { apply: 'shade', params: [Number(filters.SHADE)] },
-        // { apply: 'red', params: [Number(filters.RED)] },
-        // { apply: 'green', params: [Number(filters.GREEN)] },
-        // { apply: 'blue', params: [Number(filters.BLUE)] },
-    ]
+    type FilterSetting = {
+        label: string;
+        min: number;
+        max: number;
+        value: number;
+        defaultValue: number;
+    };
+    const filterSettings : Record<string, FilterSetting> = req.body.filterSettings;
+
+    var options = [];
+    for (const setting in filterSettings) {
+        if (filterSettings.hasOwnProperty(setting) && filterSettings[setting].value != filterSettings[setting].defaultValue) {
+            options.push({apply: filterSettings[setting].label.toLowerCase(), params: [Number(filterSettings[setting].value)]})
+        }
+    }
+    console.log(options)
 
     const imagePath = `public/images/temp/original/${imageId}.${imageExt}`;
     const outputPath = `public/images/temp/filtered/${imageId}.${imageExt}`;

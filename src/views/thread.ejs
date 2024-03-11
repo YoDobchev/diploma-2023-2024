@@ -49,7 +49,10 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 <img class="post-image-full" src="" alt="">
             </div>
             <div class="model-filter-settings">
-
+                <div class="image-filtering-prompt">
+                    <p>Filter Image</p>
+                    <div><span class="filter-settings-icon"></span></div>
+                </div>
                 <!-- <div class="filter-container">
                     <h3>HUE</h3>
                     <div class="input-container">
@@ -174,37 +177,33 @@ const nestedPosts = nestPosts(simplifiedPosts)
         
     </div>
     <script>
-        var imageId, imageExt;
+        var imageId, imageExt, isCurrentlyFiltering = false;
 
-       const filterSettings = [
-            { label: 'LIGHTEN', min: 0, max: 100, value: 0 },
-            { label: 'BRIGHTEN', min: 0, max: 100, value: 0 },
-            { label: 'DARKEN', min: 0, max: 100, value: 0 },
-            { label: 'DESATURATE', min: 0, max: 100, value: 0 },
-            { label: 'SATURATE', min: 0, max: 100, value: 0 },
-            { label: 'GRAYSCALE', min: 0, max: 100, value: 0 },
-            { label: 'HUE', min: 0, max: 360, value: 0 },
-            { label: 'TINT', min: 0, max: 100, value: 0 },
-            { label: 'SHADE', min: 0, max: 100, value: 0 },
-            { label: 'RED', min: 0, max: 255, value: 0 },
-            { label: 'GREEN', min: 0, max: 255, value: 0 },
-            { label: 'BLUE', min: 0, max: 255, value: 0 },
-        ];
-        
-        var filters = {
-            LIGHTEN: 0,
-            BRIGHTEN: 0,
-            DARKEN: 0,
-            DESATURATE: 0,
-            SATURATE: 0,
-            GRAYSCALE: 0,
-            HUE: 0,
-            TINT: 0,
-            SHADE: 0,
-            RED: 0,
-            GREEN: 0,
-            BLUE: 0,
+        var filterSettings = {
+            LIGHTEN: { label: 'LIGHTEN', min: 0, max: 100, value: 0, defaultValue: 0 },
+            BRIGHTEN: { label: 'BRIGHTEN', min: 0, max: 100, value: 0, defaultValue: 0 },
+            DARKEN: { label: 'DARKEN', min: 0, max: 100, value: 0, defaultValue: 0 },
+            DESATURATE: { label: 'DESATURATE', min: 0, max: 100, value: 0, defaultValue: 0 },
+            SATURATE: { label: 'SATURATE', min: 0, max: 100, value: 0, defaultValue: 0 },
+            GREYSCALE: { label: 'GREYSCALE', min: 0, max: 100, value: 0, defaultValue: 0 },
+            HUE: { label: 'HUE', min: 0, max: 360, value: 0, defaultValue: 0 },
+            TINT: { label: 'TINT', min: 0, max: 100, value: 0, defaultValue: 0 },
+            SHADE: { label: 'SHADE', min: 0, max: 100, value: 0, defaultValue: 0 },
+            RED: { label: 'RED', min: 0, max: 255, value: 0, defaultValue: 0 },
+            GREEN: { label: 'GREEN', min: 0, max: 255, value: 0, defaultValue: 0 },
+            BLUE: { label: 'BLUE', min: 0, max: 255, value: 0, defaultValue: 0 },
         };
+
+        const debounce = (callback, wait) => {
+            let timeoutId = null;
+
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                callback.apply(this, args);
+                }, wait);
+            };
+        }
 
         const changeRangeInputGradient = (input) => {
             let value = (input.value - input.min) / (input.max - input.min) * 100;
@@ -230,12 +229,24 @@ const nestedPosts = nestPosts(simplifiedPosts)
             input.setAttribute('type', 'range');
             input.setAttribute('min', filterSetting.min);
             input.setAttribute('max', filterSetting.max);
-            input.setAttribute('value', filterSetting.value);
+            input.setAttribute('value', filterSetting.defaultValue);
             changeRangeInputGradient(input);
+            inputContainer.appendChild(input);
+
+            const pValue = document.createElement('p');
+            pValue.textContent = filterSetting.value;
+            inputContainer.appendChild(pValue);
             input.addEventListener('change', () => {
-                filters[filterSetting.label] = parseInt(input.value);                
+                if (isCurrentlyFiltering) {
+                    pValue.innerHTML = filterSettings[filterSetting.label].value;
+                    input.value = filterSettings[filterSetting.label].value;
+                    changeRangeInputGradient(input)
+                    return;
+                }
+                isCurrentlyFiltering = true;
+                filterSettings[filterSetting.label].value = parseInt(input.value);
                 const data = {
-                    filters: filters,
+                    filterSettings: filterSettings,
                     imageId: imageId,
                     imageExt: imageExt,
                 };
@@ -250,15 +261,12 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 })
                 .then(response => response.json())
                 .then(data => {
+                    isCurrentlyFiltering = false;
                     document.querySelector('.post-image-full').src = `${data.filepath}?${generateId()}`;
+                    document.querySelector('.new-post-image-src').src = `${data.filepath}?${generateId()}`;
                     document.querySelector('.post-image-full').classList.remove('blur');
                 });
             });
-            inputContainer.appendChild(input);
-
-            const pValue = document.createElement('p');
-            pValue.textContent = filterSetting.value;
-            inputContainer.appendChild(pValue);
 
             filterContainer.appendChild(inputContainer);
 
@@ -270,11 +278,15 @@ const nestedPosts = nestPosts(simplifiedPosts)
             return filterContainer;
         }
 
-        filterSettings.forEach((setting, index) => {
-            const includeHr = index !== filterSettings.length - 1;
-            const filterDiv = createFilterDiv(setting, includeHr);
-            document.querySelector('.model-filter-settings').appendChild(filterDiv);
-        });
+        for (const setting in filterSettings) {
+            if (filterSettings.hasOwnProperty(setting)) {
+                const filterDiv = createFilterDiv(filterSettings[setting], true);
+                document.querySelector('.model-filter-settings').appendChild(filterDiv);
+            }
+        }
+        // filterSettings.forEach((setting, index) => {
+        //     const includeHr = index !== filterSettings.length - 1;
+        // });
 
         const focusImage = (div) => {
             const modal = document.querySelector('.image-modal');
@@ -387,12 +399,11 @@ const nestedPosts = nestPosts(simplifiedPosts)
             imageInput.addEventListener('input', () => {
                 const formData = new FormData();
                 const file = imageInput.files[0];
-                const generatedId = generateId(); // Ensure generateId() function is correctly generating an ID
+                const generatedId = generateId();
                 const fullName = file.name;
                 const extension = fullName.slice(((fullName.lastIndexOf(".") - 1) >>> 0) + 2);
                 formData.append('image', file);
                 // formData.append('filename', `${generatedId}.${extension}`);
-                // console.log())
                 fetch(`<%= thread %>/upload`, {
                     method: 'POST',
                     headers: {
@@ -408,7 +419,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
                     postImageDiv.className = 'post-image';
                     postImageDiv.setAttribute('onclick', 'focusImage(this)');
                     const img = document.createElement('img');
-                    img.className = 'post-image-src';
+                    img.className = 'post-image-src new-post-image-src';
                     img.src = data.filepath;
                     img.alt = '';
                     const span = document.createElement('span');
@@ -441,7 +452,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
                     console.log("lool")
                     location.reload();
                 });
-                });
+            });
 
             postContentDiv.appendChild(postHeaderDiv);
             postContentDiv.appendChild(textarea);
