@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
         cb(null, 'public/images/temp/original')
     },
     filename: (req, file, cb) => {
-        cb(null, req.headers['session-id'] + path.extname(file.originalname));
+        cb(null, String(req.headers['image-filename']));
     }
 })
 
@@ -43,11 +43,13 @@ Thread.get('/:thread', async (req: ThreadRequest, res) => {
 });
 
 Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
+    console.log(req.session.username)
     if (!req.file) {
-        console.log("kur")
+        return res.status(400).json({ error: "No file uploaded." });
     }
-    res.json({ filepath: '/public/images/temp/original/' + req.file?.filename})
+    res.json({ filepath: `/public/images/temp/original/${req.headers['image-filename']}`});
 });
+
 
 Thread.patch('/:thread/filter', async (req, res) => {
     // console.log(req.body.hue)
@@ -68,29 +70,24 @@ Thread.patch('/:thread/filter', async (req, res) => {
 });
 
 Thread.post('/:thread/createPost', async (req, res) => {
-    const session_id = req.headers['session-id'];
-    const ext = req.body.ext;
-
-    const unfiltered = `public/images/temp/original/${session_id}.${ext}`;
-    const filtered = `public/images/temp/filtered/${session_id}.${ext}`;
-    const outputFile = `public/images/archived/${session_id}.${ext}`;
-    
-    if (fs.existsSync(filtered)) {
-        await fs.promises.rename(filtered, outputFile);
-        await fs.promises.unlink(unfiltered);
-    } else if (fs.existsSync(unfiltered)) {
-        await fs.promises.rename(unfiltered, outputFile);
+    const imageId = req.body.imageId;
+    const imageExt = req.body.imageExt;
+    const username = req.session.username;
+    let outputFile;
+    if (imageId && imageExt) {
+        const unfiltered = `public/images/temp/original/${imageId}.${imageExt}`;
+        const filtered = `public/images/temp/filtered/${imageId}.${imageExt}`;
+        outputFile = `public/images/archived/${imageId}.${imageExt}`;
+        if (fs.existsSync(filtered)) {
+            await fs.promises.rename(filtered, outputFile);
+            await fs.promises.unlink(unfiltered);
+        } else if (fs.existsSync(unfiltered)) {
+            await fs.promises.rename(unfiltered, outputFile);
+        }
     }
 
-    // const newPost: any = {
-    //     id: req.body.postId,
-    //     thread_id: req.params.thread,
-    //     // image: `${session_id}.${ext}`,
-    //     text: req.body.text
-    // }
-    await createPost(req.params.thread, req.body.text, 'cat', 'car');
-
-    // await Posts.create(newPost);
+    await createPost(req.params.thread, req.body.text, req.session.username, req.body.replyToId, outputFile)
+    res.status(200).json({});
 });
 
 export default Thread;

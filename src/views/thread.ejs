@@ -1,3 +1,33 @@
+<%
+const plainPosts = posts.map(post => post.get({ plain: true }));
+plainPosts.sort((a, b) => new Date(a.createdat) - new Date(b.createdat));
+
+function simplifyImages(post) {
+  post.images = post.images.map(image => image.path);
+  return post;
+}
+
+const simplifiedPosts = plainPosts.map(post => simplifyImages(post));
+
+function nestPosts(posts) {
+    const postMap = new Map();
+
+    posts.forEach(post => postMap.set(post.id, { ...post, replies: [] }));
+
+    posts.forEach(post => {
+        if (post.reply_to_id) {
+            const parent = postMap.get(post.reply_to_id);
+            if (parent) {
+                parent.replies.push(postMap.get(post.id));
+            }
+        }
+    });
+
+    return Array.from(postMap.values()).filter(post => !post.reply_to_id);
+}
+const nestedPosts = nestPosts(simplifiedPosts)
+
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,19 +40,35 @@
 <body>
     <%- include('partials/navbar') %>
     <div class="overlay"></div>
-    <div class="imageModal">
-        <div class="model-icon-container">
-            <div>
-                <span class="edit-image"></span>
-            </div>
+    <div class="image-modal">
+        <div class="modal-nav">
             <span class="close" onclick="unFocusImage()"></span>
         </div>
-        <div class="image-container">
-            <img src="" alt="">
+        <div class="main">
+            <div class="image-container">
+                <img src="" alt="">
+            </div>
+            <div class="model-filter-settings">
+
+                <!-- <div class="filter-container">
+                    <h3>HUE</h3>
+                    <div class="input-container">
+                        <p>0</p>
+                        <input min="0" max="360" value="50" type="range">
+                        <p>50</p>
+                    </div>
+                    <hr>
+                </div> -->
+
+                <!-- <p>Edit image</p>
+                <div>
+                    <span class="edit-image"></span>
+                </div> -->
+            </div>
         </div>
     </div>
     <div class="posts">
-        <div class="post">
+        <!-- <div class="post">
             <div class="post-content">
                 <div class="post-header">
                     <span class="user"></span>
@@ -40,7 +86,7 @@
                     Nam lorem nunc, sollicitudin ac lorem sit amet, porttitor consectetur ipsum. Sed varius sem a tellus accumsan, quis tincidunt massa placerat. Cras placerat consectetur tincidunt. Quisque molestie quam id ultricies fringilla. Etiam lacinia diam sit amet lorem tempor, at imperdiet lorem sagittis. Nunc in scelerisque lorem. Maecenas feugiat cursus cursus.</p>
 
                 <div class="post-image" onclick="focusImage(this)">
-                    <img class="post-image-src" src="/public/images/temp/original/87ca834e-055e-4763-bc6f-ab2bcd32c451.jpg" alt="">
+                    <img class="post-image-src" src="/public/images/temp/original/input.jpg" alt="">
                     <span class="focus-image"></span>
                 </div>
 
@@ -56,164 +102,434 @@
                     <span></span>
                 </div>
             </div>
+            
+        </div> -->
+        <!-- <div class="post">
+            <div class="post-content">
+                <div class="post-header">
+                    <h2 class="username">Replying to gosho ebacha...</h2>
+                </div>
+                <textarea placeholder="Type something..." required></textarea>
+
+                <div class="post-image" onclick="focusImage(this)">
+                    <img class="post-image-src" src="/public/images/temp/original/input.jpg" alt="">
+                    <span class="focus-image"></span>
+                </div>
+
+                <hr>
+
+                <div class="icon-bar">
+                    <input id="image-input" type="file" name="image-input" accept="image/png, image/jpeg"/>
+                    <label id="image-icon" for="image-input">
+                        <span class="image-selection"></span>
+                    </label>
+                </div>
+            </div>
+        </div> -->
+        <div class="no-posts">
+            <p onclick="createNewPost()">lol</p>
         </div>
-    </div>
-    <div id="new-post-container">
-        <div>
-            <form id="imageForm" enctype="multipart/form-data">
-                <input id="image" type="file" name="image" accept="image/png, image/jpeg"/>
-                <label id="image-icon" for="image"></label>
-                <input id="postText" type="text">
-                <button type="submit">Upload</button>
-            </form>
+        <%
+        // if (nestedPosts.length == 0) {
+
+        // }
+        function renderPosts(posts, level = 0) {
+            posts.forEach(post => {
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const month = monthNames[post.createdat.getMonth()];
+                const day = post.createdat.getDate();
+                let hours = post.createdat.getHours();
+                let minutes = post.createdat.getMinutes();
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                const formattedDate = `${month} ${day} ${hours}:${minutes}`;
+        %>
+        <div class="post" id="<%= post.id %>" style="margin-left: <%= (level + 1) * 15 %>px;">
+            <div class="post-content">
+                <div class="post-header">
+                    <span class="user"></span>
+                    <h2 class="username"><%= post.created_by ? post.created_by : 'Anonymous' %></h2>
+                    <h2 class="date">• <%= formattedDate %></h2>
+                </div>
+                <p class="post-text"><%= post.text %></p>
+                <%
+                    if (post.images.length > 0) {
+                %>
+                <div class="post-image-container">
+                    <div class="post-image" onclick="focusImage(this)">
+                    <img class="post-image-src" src="/<%= post.images[0] %>" alt="">
+                    <span class="focus-image"></span>
+                </div>
+                </div>
+                
+                <%
+                    }
+                %>
+                <hr>
+
+                <div class="icon-bar">
+                    <span class="heart"></span>
+                    <span class="reply"></span>
+                </div>
+            </div>
+            <% if (post.replies && post.replies.length > 0) {%>
+            <div class="expand">
+                <div>
+                    <span></span>
+                </div>
+            </div>
+            <%}%>
         </div>
-        <div>
-            <img id= "image_view" src="" alt="">
-        </div>
-        <!-- <form id="imageForm" enctype="multipart/form-data"> -->
-        <div>
-            <input type="range" name="" id="hue-slider">
-        </div>
-        <!-- </form> -->
+            <div class="replies-container" id="<%= post.id %>-replies">
+            <%
+                    // Check if the current post has replies and render them
+                    if (post.replies && post.replies.length > 0) {
+            %>
+                        <% renderPosts(post.replies, level + 1); %>
+                        <%}%>
+                    </div>
+        <%
+            });
+        }
+        
+        renderPosts(nestedPosts);
+        %>
+        
     </div>
     <script>
-        const posts = <%- JSON.stringify(posts) %>;
+        var imageId, imageExt, replyToId;
 
-        let fileExt;
+       const filterSettings = [
+            { label: 'LIGHTEN', type: 'lighten', min: 0, max: 100, value: 50 },
+            { label: 'HUE', type: 'hue', min: 0, max: 360, value: 180 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+            { label: 'BRIGHTNESS', type: 'brightness', min: 0, max: 100, value: 50 },
+        ];
+
+        const changeRangeInputGradient = (input) => {
+            let value = (input.value - input.min) / (input.max - input.min) * 100;
+            input.style.background = 'linear-gradient(to right, #FFC3BA ' + value + '%, #4B4B4B ' + value + '%)';
+        }
+
+        const createFilterDiv = (filterSetting, includeHr) => {
+            const filterContainer = document.createElement('div');
+            filterContainer.className = 'filter-container';
+
+            const header = document.createElement('h3');
+            header.textContent = filterSetting.label;
+            filterContainer.appendChild(header);
+
+            const inputContainer = document.createElement('div');
+            inputContainer.className = 'input-container';
+
+            const pMin = document.createElement('p');
+            pMin.textContent = filterSetting.min;
+            inputContainer.appendChild(pMin);
+
+            const input = document.createElement('input');
+            input.setAttribute('type', 'range');
+            input.setAttribute('min', filterSetting.min);
+            input.setAttribute('max', filterSetting.max);
+            input.setAttribute('value', filterSetting.value);
+            inputContainer.appendChild(input);
+            changeRangeInputGradient(input);
+
+            const pValue = document.createElement('p');
+            pValue.textContent = filterSetting.value;
+            inputContainer.appendChild(pValue);
+
+            filterContainer.appendChild(inputContainer);
+
+            if (includeHr) {
+                const hr = document.createElement('hr');
+                filterContainer.appendChild(hr);
+            }
+
+            return filterContainer;
+        }
+
+        filterSettings.forEach((setting, index) => {
+            const includeHr = index !== filterSettings.length - 1;
+            const filterDiv = createFilterDiv(setting, includeHr);
+            document.querySelector('.model-filter-settings').appendChild(filterDiv);
+        });
 
         const focusImage = (div) => {
-            const modal = document.querySelector('.imageModal');
+            const modal = document.querySelector('.image-modal');
             document.querySelector('.overlay').style.display = 'block';
             modal.style.display = 'flex';
             modal.querySelector('img').src = div.firstElementChild.src;
         }
         const unFocusImage = () => {
-            document.querySelector('.imageModal').style.display = 'none';
+            document.querySelector('.image-modal').style.display = 'none';
             document.querySelector('.overlay').style.display = 'none';
         }
 
-        function generateSessionId() {
+        function generateId() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
-        
-        // Store the session ID in session storage
-        if (!sessionStorage.getItem('session_id')) {
-            sessionStorage.setItem('session_id', generateSessionId());
-        }
 
-        function nestPosts(posts) {
-            const postMap = new Map();
+        document.querySelectorAll('.expand div').forEach(expandBtn => {
+            const repliesSectionId = `${expandBtn.closest('.post').id}-replies`;
+            const repliesSection = document.getElementById(repliesSectionId);
+            const span = expandBtn.querySelector('span');
 
-            posts.forEach(post => postMap.set(post.id, { ...post, replies: [] }));
-
-            posts.forEach(post => {
-                if (post.reply_to_id) {
-                    postMap.get(post.reply_to_id).replies.push(postMap.get(post.id));
-                }
-            });
-
-            return Array.from(postMap.values()).filter(post => post.reply_to_id === null);
-        }
-
-        function renderPosts(posts, depth = 0) {
-            posts.forEach(post => {
-                const postsContainer = document.querySelector('.posts');
-                const postDiv = document.createElement('div');
-                postDiv.className = 'post';
-                postDiv.id = post.id;
-                postDiv.style.marginLeft = `${depth * 20}px`;
-
-                const p = document.createElement('p');
-                p.textContent = post.text;
-
-                const replyIcon = document.createElement('span');
-                replyIcon.id = 'reply-icon';
-
-                if (post.images && post.images.length > 0) {
-                    const img = document.createElement('img');
-                    img.src = `/public/images/archived/${post.images[0].path}`;
-                    postDiv.appendChild(img);
-                }
-                postDiv.appendChild(p);
-                postDiv.appendChild(replyIcon);
-                postsContainer.appendChild(postDiv);
-
-                if (post.replies && post.replies.length > 0) {
-                    renderPosts(post.replies, depth + 1);
-                }
-            });
-        }
-
-        posts.sort((a, b) => new Date(a.createdat) - new Date(b.createdat));
-        const nestedPosts = nestPosts(posts);
-        renderPosts(nestedPosts);
-
-        // const sessionId = sessionStorage.getItem('session_id');
-        // console.log(sessionId)
-        // fetch('https://your-backend-endpoint.com/data', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Session-ID': sessionId // Include the session ID in the request header
-        //     },
-        //     body: JSON.stringify({ /* your data */ })
-        // })
-        // .then(response => response.json())
-        // .then(data => console.log(data))
-        // .catch(error => console.error('Error:', error));
-        document.querySelectorAll('#reply-icon').forEach(reply_btn => {
-            reply_btn.addEventListener('click', () => {
-                console.log(reply_btn.parentElement.id)
+            expandBtn.addEventListener('click', () => {
+                repliesSection.style.display = repliesSection.style.display === 'block' ? 'none' : 'block';
+                
+                span.style.backgroundImage = repliesSection.style.display === 'block' 
+                    ? 'url("/public/icons/minimize-sign.svg")'
+                    : 'url("/public/icons/plus.svg")';
             });
         });
 
-        document.getElementById('postText').addEventListener('keydown', (ev) => {
-            if (event.key === 'Enter' || event.keyCode === 13) {
-                ev.preventDefault();
-                console.log(document.getElementById('postText').value)
+        document.querySelectorAll('.image-modal input[type="range"]').forEach(input => {
+            input.oninput = function () {
+                this.nextElementSibling.innerHTML = input.value;
+                changeRangeInputGradient(input);
+            }
+
+            // input.nextElementSibling.oninput = function () {
+            //     input.value = input.nextElementSibling.value;
+            //     changeRangeInputGradient(input);
+            // }
+        });
+
+        document.querySelectorAll('.reply').forEach(reply_btn => {
+            reply_btn.addEventListener('click', () => {
+                const oldNewPost = document.querySelector('.new-post-container');
+                if (oldNewPost) {
+                    oldNewPost.parentNode.removeChild(oldNewPost);
+                }
+                createNewPost(
+                    reply_btn.closest('.post').id,
+                    reply_btn.closest('.post').querySelector('.username').innerHTML);
+            });
+        });
+
+        const createNewPost = (id, name) => {
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post new-post-container';
+
+            const postContentDiv = document.createElement('div');
+            postContentDiv.className = 'post-content';
+
+            const postHeaderDiv = document.createElement('div');
+            postHeaderDiv.className = 'post-header';
+            if (name) {
+                const usernameH2 = document.createElement('h2');
+                usernameH2.className = 'username';
+                usernameH2.textContent = `Replying to ${name}...`;
+    
+                postHeaderDiv.appendChild(usernameH2);
+            }
+
+            const textarea = document.createElement('textarea');
+            textarea.placeholder = 'Type something...';
+            textarea.className = 'new-post-text';
+            textarea.required = true;
+            textarea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight - 10) + 'px';
+            });
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'new-post-image-container'
+
+            const hr = document.createElement('hr');
+
+            const iconBarDiv = document.createElement('div');
+            iconBarDiv.className = 'icon-bar';
+            const imageInput = document.createElement('input');
+            imageInput.type = 'file';
+            imageInput.id = 'image-input';
+            imageInput.name = 'image-input';
+            imageInput.accept = 'image/png, image/jpeg';
+            const label = document.createElement('label');
+            label.setAttribute('for', 'image-input');
+            label.id = 'image-icon';
+            const imageSelectionSpan = document.createElement('span');
+            imageSelectionSpan.className = 'image-selection';
+
+            const uploadPost = document.createElement('span');
+            uploadPost.className = 'upload-post';
+
+            label.appendChild(imageSelectionSpan);
+            iconBarDiv.appendChild(imageInput);
+            iconBarDiv.appendChild(label);
+            iconBarDiv.appendChild(uploadPost);
+
+            imageInput.addEventListener('input', () => {
+                const formData = new FormData();
+                const file = imageInput.files[0];
+                const generatedId = generateId(); // Ensure generateId() function is correctly generating an ID
+                const fullName = file.name;
+                const extension = fullName.slice(((fullName.lastIndexOf(".") - 1) >>> 0) + 2);
+                formData.append('image', file);
+                // formData.append('filename', `${generatedId}.${extension}`);
+                // console.log())
+                fetch(`<%= thread %>/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'image-Filename': `${generatedId}.${extension}`,
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    imageId = generatedId;
+                    imageExt = extension;
+                    const postImageDiv = document.createElement('div');
+                    postImageDiv.className = 'post-image';
+                    postImageDiv.setAttribute('onclick', 'focusImage(this)');
+                    const img = document.createElement('img');
+                    img.className = 'post-image-src';
+                    img.src = data.filepath;
+                    img.alt = '';
+                    const span = document.createElement('span');
+                    span.className = 'focus-image';
+
+                    postImageDiv.appendChild(img);
+                    postImageDiv.appendChild(span);
+                    document.querySelector('.new-post-image-container').appendChild(postImageDiv);
+                    postDiv.querySelector('.image-selection').style.display = 'none'
+                    // document.getElementById('image_view').src = `${data.filepath}?${generateId()}`;
+                });
+            });
+
+            uploadPost.addEventListener('click', () => {
                 const data = {
-                    postId: generateSessionId(),
-                    text: document.getElementById('postText').value,
-                    ext: fileExt,
+                    replyToId: id,
+                    text: document.querySelector('.new-post-text').value,
+                    imageId: imageId,
+                    imageExt: imageExt,
                 }
                 fetch(`<%= thread %>/createPost`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Session-ID': sessionStorage.getItem('session_id')
                     },
                     body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("lool")
+                    location.reload();
                 });
-                sessionStorage.setItem('session_id', generateSessionId());
+                });
 
+            postContentDiv.appendChild(postHeaderDiv);
+            postContentDiv.appendChild(textarea);
+            postContentDiv.appendChild(imageContainer);
+            postContentDiv.appendChild(hr);
+            postContentDiv.appendChild(iconBarDiv);
 
-                // .then(response => response.json())
-                // .then(data => {
-                //     document.getElementById('image_view').src = `${data.filepath}?${generateSessionId()}`;
-                // });
-            };
-        });
+            postDiv.appendChild(postContentDiv);
+
+            const repliesContainer = document.querySelector(`[id="${id}-replies"]`) ? document.querySelector(`[id="${id}-replies"]`) : document.querySelector('.posts');
+            // console.log(repliesContainer)
+            repliesContainer.style.display = 'block';
+            if (document.querySelector(`[id="${id}"] .expand span`)) {
+                document.querySelector(`[id="${id}"] .expand span`).style.backgroundImage = 'url("/public/icons/minimize-sign.svg")';
+            }
+            if (!repliesContainer.classList.contains('posts')) {
+                const currentMarginLeft = parseInt(document.querySelector(`[id="${id}"]`).style.marginLeft) || 0;
+                postDiv.style.marginLeft = `${currentMarginLeft + 15}px`;
+            }
+            // postDiv.style.border = '2px solid #8B4A4A'
+            postDiv.style.boxShadow = '0 -1px 5px 2px #8B4A4A'
+            postDiv.style.borderRadius = '5px'
+            repliesContainer.prepend(postDiv);
+        }
         
-        document.getElementById('image').addEventListener('input', () => {
-            const data = new FormData(document.getElementById('imageForm'));
-            fileExt = document.getElementById('image').files[0].name.split('.').pop();
-            console.log(document.getElementById('image').files[0].name)
-            console.log(sessionStorage.getItem('session_id'))
-            fetch(`<%= thread %>/upload`, {
-                method: 'POST',
-                headers: {
-                    'Session-ID': sessionStorage.getItem('session_id')
-                },
-                body: data
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('image_view').src = `${data.filepath}?${generateSessionId()}`;
-            });
-        });
+        // Store the session ID in session storage
+        if (!sessionStorage.getItem('session_id')) {
+            sessionStorage.setItem('session_id', generateId());
+        }
+
+        // function nestPosts(posts) {
+        //     const postMap = new Map();
+
+        //     posts.forEach(post => postMap.set(post.id, { ...post, replies: [] }));
+
+        //     posts.forEach(post => {
+        //         if (post.reply_to_id) {
+        //             postMap.get(post.reply_to_id).replies.push(postMap.get(post.id));
+        //         }
+        //     });
+
+        //     return Array.from(postMap.values()).filter(post => post.reply_to_id === null);
+        // }
+
+        // function renderPosts(posts, depth = 0) {
+        //     posts.forEach(post => {
+        //         const postsContainer = document.querySelector('.posts');
+        //         const postDiv = document.createElement('div');
+        //         postDiv.className = 'post';
+        //         postDiv.id = post.id;
+        //         postDiv.style.marginLeft = `${depth * 20}px`;
+
+        //         const p = document.createElement('p');
+        //         p.textContent = post.text;
+
+        //         const replyIcon = document.createElement('span');
+        //         replyIcon.id = 'reply-icon';
+
+        //         if (post.images && post.images.length > 0) {
+        //             const img = document.createElement('img');
+        //             img.src = `/public/images/archived/${post.images[0].path}`;
+        //             postDiv.appendChild(img);
+        //         }
+        //         postDiv.appendChild(p);
+        //         postDiv.appendChild(replyIcon);
+        //         postsContainer.appendChild(postDiv);
+
+        //         if (post.replies && post.replies.length > 0) {
+        //             renderPosts(post.replies, depth + 1);
+        //         }
+        //     });
+        // }
+
+        // posts.sort((a, b) => new Date(a.createdat) - new Date(b.createdat));
+        // const nestedPosts = nestPosts(posts);
+        // renderPosts(nestedPosts)
+
+        // document.getElementById('postText').addEventListener('keydown', (ev) => {
+        //     if (event.key === 'Enter' || event.keyCode === 13) {
+        //         ev.preventDefault();
+        //         console.log(document.getElementById('postText').value)
+        //         const data = {
+        //             postId: generateId(),
+        //             text: document.getElementById('postText').value,
+        //             ext: fileExt,
+        //         }
+        //         fetch(`<%= thread %>/createPost`, {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'Session-ID': sessionStorage.getItem('session_id')
+        //             },
+        //             body: JSON.stringify(data)
+        //         });
+        //         sessionStorage.setItem('session_id', generateId());
+
+
+        //         // .then(response => response.json())
+        //         // .then(data => {
+        //         //     document.getElementById('image_view').src = `${data.filepath}?${generateId()}`;
+        //         // });
+        //     };
+        // });
+        
 
         document.getElementById('hue-slider').addEventListener('change', () => {
             document.getElementById('image_view').classList.add('blur');
@@ -231,7 +547,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('image_view').src = `${data.filepath}?${generateSessionId()}`;
+                document.getElementById('image_view').src = `${data.filepath}?${generateId()}`;
                 document.getElementById('image_view').classList.remove('blur');
             })
         });

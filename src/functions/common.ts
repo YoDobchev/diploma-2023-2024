@@ -3,13 +3,14 @@ import Threads from "../models/Threads.model"
 import Posts from "../models/Posts.model"
 import Images from "../models/Images.model";
 
-export function createPost(thread_id: string, text: string, created_by: string, reply_to_id?: string, imagePath?: string): Promise<Posts> {
+export function createPost(thread_id: string, text: string, created_by?: string, reply_to_id?: string, imagePath?: string): Promise<Posts> {
     return db.transaction(async (transaction) => {
         const postData: Partial<Posts> = {
             id: generateId(),
             thread_id,
             text,
-            created_by
+            created_by,
+            reply_to_id,
         };
 
         const newPost = await Posts.create(postData as Posts, { transaction });

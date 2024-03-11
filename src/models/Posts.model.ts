@@ -33,7 +33,7 @@ class Posts extends Model<Posts> {
     @ForeignKey(() => Users)
     @Column({
       type: DataType.STRING,
-      allowNull: false
+      allowNull: true
     })
     declare created_by: string;
 
