@@ -8,6 +8,7 @@
     <title>Document</title>
 </head>
 <body>
+    <%- include('partials/navbar') %>
     <% boards.forEach((board) => { %>
         <div class="board-row">
             <a href="/<%= board.id %>"><%= board.id %></a> 

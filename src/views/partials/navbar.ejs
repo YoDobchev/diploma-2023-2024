@@ -3,12 +3,45 @@
 <div class="navbar">
     <div class="navbar-navigation">
         <span class="location" onclick="window.location='/'">home</span>
-        <span>/</span>
-        <span class="location" onclick="window.location='/<%= board %>'"><%= board %></span>
+        <% var safeBoard = typeof board !== 'undefined' ? board : null; %>
+        <% if (safeBoard) { %>
+            <span>/</span>
+            <span class="location" onclick="window.location='/<%= board %>'"><%= board %></span>
+        <% } %>
         <% var safeThread = typeof thread !== 'undefined' ? thread : null; %>
-        <% if (safeThread) { %>
+        <% if (safeBoard && safeThread) { %>
             <span>/</span>
             <span class="location" onclick="window.location='/<%= board %>/<%= thread %>'"><%= thread %></span>
         <% } %>
     </div>
+    <div class="profile">
+        <div class="profile-toggle">
+            <p><%= user ? user : 'Anonymous' %></p>
+            <span></span>
+        </div>
+        <div class="profile-content">
+            <div class="a-container">
+                <%
+                var redirectUrl = (safeBoard ? encodeURIComponent('/' + safeBoard) : '') + (safeThread ? encodeURIComponent('/' + safeThread) : '');
+                if (user) {
+                %>
+                <a href="/logout?redirect=<%= redirectUrl %>">Logout</a>
+                <% } else { %>
+                    <a href="/login?redirect=<%= redirectUrl %>">Login</a>
+                    <a href="/register?redirect=<%= redirectUrl %>">Register</a>
+                <% } %>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.querySelector('.profile-toggle').addEventListener('click', function() {
+        var dropdownContent = this.nextElementSibling;
+        if (dropdownContent.style.display === "block") {
+            dropdownContent.style.display = "none";
+        } else {
+            dropdownContent.style.display = "block";
+        }
+    });
+</script>

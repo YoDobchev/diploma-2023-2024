@@ -29,9 +29,11 @@ app.set('views', path.join(process.env.ROOTDIR, 'src', 'views'));
 import Home from "./home";
 import Board from "./board";
 import Login from './login';
+import Logout from './logout';
 import Register from './register';
 app.use('/', Home);
 app.use('/login', Login);
+app.use('/logout', Logout);
 app.use('/register', Register);
 app.use('/', Board);
 

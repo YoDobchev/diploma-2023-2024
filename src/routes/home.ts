@@ -10,7 +10,7 @@ home.get('/', async (req, res) => {
         // console.log(result);        
 
     console.log(JSON.stringify(boards));            
-    res.render('home.ejs', {boards: boards});
+    res.render('home.ejs', { boards: boards, user: req.session.username });
 });
 
 export default home;

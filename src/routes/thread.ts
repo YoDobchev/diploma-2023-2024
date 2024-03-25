@@ -4,7 +4,8 @@ import path from 'path';
 import Jimp from "jimp";
 import fs from 'fs';
 import Posts from "../models/Posts.model";
-import { createPost, findPostsByThreadId } from "../functions/common";
+import { createPost, deletePost, findPostsByThreadId } from "../functions/common";
+import Threads from "../models/Threads.model";
 
 const Thread = Router({ mergeParams: true });
 
@@ -15,7 +16,7 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         cb(null, String(req.headers['image-filename']));
     }
-})
+});
 
 const upload = multer({storage: storage});
 
@@ -24,22 +25,27 @@ interface ThreadRequestParams {
     board: string;
     thread: string;
     [key: string]: string;
-}
+};
   
 interface ThreadRequest extends Request {
     params: ThreadRequestParams;
-}
+};
 
 Thread.get('/:thread', async (req: ThreadRequest, res) => {
     const { board, thread } = req.params;
-    console.log(req.session.id)
-    // const posts = await Posts.findAll({where: {thread_id: thread}});
+
+    const Thread = await Threads.findOne({ where: { id: thread } });
+
+    if (!Thread) {
+      res
+        .status(404)
+        .render('error.ejs', { code: 404, message: "Thread not found!"})
+
+      return;
+    }
+
     const posts = await findPostsByThreadId(thread);
     res.render('thread.ejs', {board: board, thread: thread, posts: posts, user: req.session.username});
-    // posts.forEach(post => {
-    //     console.log(post.images)
-
-    // });
 });
 
 Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
@@ -98,8 +104,48 @@ Thread.post('/:thread/createPost', async (req, res) => {
         }
     }
 
-    await createPost(req.params.thread, req.body.text, req.session.username, req.body.replyToId, outputFile)
+    await createPost(req.params.thread, req.body.text, req.session.username, req.body.replyToId, imageId, outputFile)
     res.status(200).json({});
+});
+
+Thread.post('/:thread/copyImage', async (req, res) => {
+    const { archivedId, archivedExt, newId } = req.body;
+    const copyFrom = `public/images/archived/${archivedId}.${archivedExt}`;
+    const copyTo = `public/images/temp/original/${newId}.${archivedExt}`
+    await fs.promises.copyFile(copyFrom, copyTo);
+});
+
+Thread.delete('/:thread/deletePost', async (req, res) => {
+    const { id } = req.body;
+    const username = req.session.username;
+    
+    if (!username) {
+        return res.status(401).json({ message: 'Unauthorized: No session found' });
+    }
+
+    try {
+        await deletePost(id, username);    
+    } catch (error) {
+        console.error('Failed to delete post:', error);
+        res.status(500).json({ message: 'An error occurred while deleting the post' });
+    }
+});
+
+Thread.delete('/:thread/removeImg', async (req, res) => {
+    const imageId = req.body.imageId;
+    const imageExt = req.body.imageExt;
+
+    if (imageId && imageExt) {
+        const unfiltered = `public/images/temp/original/${imageId}.${imageExt}`;
+        const filtered = `public/images/temp/filtered/${imageId}.${imageExt}`;
+        if (fs.existsSync(filtered)) {
+            await fs.promises.unlink(filtered);
+        }
+
+        if (fs.existsSync(unfiltered)) {
+            await fs.promises.unlink(unfiltered);
+        }
+    } 
 });
 
 export default Thread;

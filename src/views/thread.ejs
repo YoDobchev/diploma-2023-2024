@@ -3,7 +3,7 @@ const plainPosts = posts.map(post => post.get({ plain: true }));
 plainPosts.sort((a, b) => new Date(a.createdat) - new Date(b.createdat));
 
 function simplifyImages(post) {
-  post.images = post.images.map(image => image.path);
+  post.images = post.images.map(image => ({path: image.path, id: image.id}));
   return post;
 }
 
@@ -40,6 +40,17 @@ const nestedPosts = nestPosts(simplifiedPosts)
 <body>
     <%- include('partials/navbar') %>
     <div class="overlay"></div>
+
+    <div id="customConfirmBox">
+        <div class="confirm-content">
+            <p id="confirmQuestion">Do you want to proceed?</p>
+            <div>
+                <button onclick="handleConfirm(true)">Confirm</button>
+                <button onclick="handleConfirm(false)">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="image-modal">
         <div class="modal-nav">
             <span class="close" onclick="unFocusImage()"></span>
@@ -48,10 +59,13 @@ const nestedPosts = nestPosts(simplifiedPosts)
             <div class="image-container">
                 <img class="post-image-full" src="" alt="">
             </div>
+            <div class="vertical-hr"></div>
             <div class="model-filter-settings">
                 <div class="image-filtering-prompt">
-                    <p>Filter Image</p>
-                    <div><span class="filter-settings-icon"></span></div>
+                    <p>Enable filtering</p>
+                    <div class="filter-settings-start">
+                        <span class="filter-settings-icon"></span>
+                    </div>
                 </div>
                 <!-- <div class="filter-container">
                     <h3>HUE</h3>
@@ -107,13 +121,9 @@ const nestedPosts = nestPosts(simplifiedPosts)
             </div>
             
         </div> -->
-        <div class="no-posts">
-            <p onclick="createNewPost()">lol</p>
-        </div>
+        
         <%
-        // if (nestedPosts.length == 0) {
-
-        // }
+        
         function renderPosts(posts, level = 0) {
             posts.forEach(post => {
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -137,7 +147,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 %>
                 <div class="post-image-container">
                     <div class="post-image" onclick="focusImage(this)">
-                    <img class="post-image-src" src="/<%= post.images[0] %>">
+                    <img class="post-image-src" src="/<%= post.images[0].path %>" id="<%= post.images[0].id %>">
                     <span class="focus-image"></span>
                 </div>
                 </div>
@@ -148,7 +158,10 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 <hr>
 
                 <div class="icon-bar">
-                    <span class="heart"></span>
+                    <!-- <span class="heart"></span> --> 
+                    <% if (user && post.created_by == user) { %>
+                        <span class="delete"></span>
+                    <% } %>
                     <span class="reply"></span>
                 </div>
             </div>
@@ -174,10 +187,17 @@ const nestedPosts = nestPosts(simplifiedPosts)
         
         renderPosts(nestedPosts);
         %>
-        
+    </div>
+    <div class="new-post-container-to-thread">
+        <% if (nestedPosts.length == 0) { %>
+            <p></p>
+        <% } %>
+        <div class="new-post-icon" onclick="createNewPost()">
+            <span></span>
+        </div>
     </div>
     <script>
-        var imageId, imageExt, isCurrentlyFiltering = false;
+        var imageId, imageExt, currentlyReviewingId, isFilteringEnabled = false , isCurrentlyExpectingFiltered = false;
 
         var filterSettings = {
             LIGHTEN: { label: 'LIGHTEN', min: 0, max: 100, value: 0, defaultValue: 0 },
@@ -204,10 +224,80 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 }, wait);
             };
         }
+        let confirmCallback = null;
+   
+        function showConfirm(question, callback) {
+            document.getElementById('confirmQuestion').innerText = question;
+            document.getElementById('customConfirmBox').style.display = 'flex';
+            confirmCallback = callback;
+        }
+
+        function handleConfirm(isConfirmed) {
+            document.getElementById('customConfirmBox').style.display = 'none';
+            if (isConfirmed && typeof confirmCallback === 'function') {
+                confirmCallback();
+            }
+            confirmCallback = null;
+        }
 
         const changeRangeInputGradient = (input) => {
             let value = (input.value - input.min) / (input.max - input.min) * 100;
             input.style.background = 'linear-gradient(to right, #FFC3BA ' + value + '%, #4B4B4B ' + value + '%)';
+        }
+
+        document.querySelector('.filter-settings-start').addEventListener('click', () => {
+            if (!isFilteringEnabled) {
+                enableFiltering();
+                return;
+            }
+            showConfirm('Disgard new post?', enableFiltering)
+        });
+
+        const enableFiltering = () => {
+            isFilteringEnabled = true;
+            // console.log(imageId)
+            
+            if (!imageId || currentlyReviewingId != imageId) {
+                const url = document.querySelector('.post-image-full').src
+                const lastSlashIndex = url.lastIndexOf('/');
+                const lastDotIndex = url.lastIndexOf('.');
+                const uuid = url.slice(lastSlashIndex + 1, lastDotIndex);
+                const extension = url.slice(lastDotIndex + 1);
+                // console.log(uuid)
+                // console.log(document.querySelector(`[id="${uuid}"]`).closest('.post'))
+
+                const newId = generateId();
+                const data = {
+                    archivedId: uuid,
+                    archivedExt: extension,
+                    newId: newId
+                };
+                fetch(`<%= thread %>/copyImage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                });
+                console.log(uuid)
+                const post = document.querySelector(`[id="${uuid}"]`).closest('.post');
+                imageId = newId;
+                imageExt = extension;
+                const oldNewPost = document.querySelector('.new-post-container');
+                let oldText = ''
+                if (oldNewPost) {
+                    oldText = oldNewPost.querySelector('textarea').value;
+                    oldNewPost.parentNode.removeChild(oldNewPost);
+                }
+                createNewPost(post.id, post.querySelector('.username').innerHTML);
+                const newNewPost = document.querySelector('.new-post-container');
+                newNewPost.querySelector('textarea').value = oldText;
+                console.log(`/public/images/archived/${imageId}.${imageExt}`)
+                deployImg(url);
+                openModal(newId);
+                return;
+            }
+            openModal(imageId)
         }
 
         const createFilterDiv = (filterSetting, includeHr) => {
@@ -237,13 +327,13 @@ const nestedPosts = nestPosts(simplifiedPosts)
             pValue.textContent = filterSetting.value;
             inputContainer.appendChild(pValue);
             input.addEventListener('change', () => {
-                if (isCurrentlyFiltering) {
+                if (isCurrentlyExpectingFiltered) {
                     pValue.innerHTML = filterSettings[filterSetting.label].value;
                     input.value = filterSettings[filterSetting.label].value;
                     changeRangeInputGradient(input)
                     return;
                 }
-                isCurrentlyFiltering = true;
+                // isCurrentlyExpectingFiltered = true;
                 filterSettings[filterSetting.label].value = parseInt(input.value);
                 const data = {
                     filterSettings: filterSettings,
@@ -261,7 +351,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 })
                 .then(response => response.json())
                 .then(data => {
-                    isCurrentlyFiltering = false;
+                    isCurrentlyExpectingFiltered = false;
                     document.querySelector('.post-image-full').src = `${data.filepath}?${generateId()}`;
                     document.querySelector('.new-post-image-src').src = `${data.filepath}?${generateId()}`;
                     document.querySelector('.post-image-full').classList.remove('blur');
@@ -288,12 +378,38 @@ const nestedPosts = nestPosts(simplifiedPosts)
         //     const includeHr = index !== filterSettings.length - 1;
         // });
 
+        const openModal = (id) => {
+            // console.log(isFilteringEnabled)
+            // console.log(imageId)
+            currentlyReviewingId = id;
+            // console.log(currentlyReviewingId)
+            // console.log(isFilteringEnabled && imageId == currentlyReviewingId)
+            
+            if (isFilteringEnabled && imageId == currentlyReviewingId) {
+                document.querySelector('.image-filtering-prompt').style.display = 'none';
+                document.querySelector('.model-filter-settings').style.justifyContent = 'flex-start';
+                document.querySelectorAll('.filter-container').forEach(filter => {
+                    filter.style.display = 'flex';
+                });
+                return;
+            }
+            document.querySelector('.image-filtering-prompt').style.display = 'flex';
+            document.querySelector('.model-filter-settings').style.justifyContent = 'center';
+            document.querySelectorAll('.filter-container').forEach(filter => {
+                filter.style.display = 'none';
+            });
+        }
+
         const focusImage = (div) => {
             const modal = document.querySelector('.image-modal');
             document.querySelector('.overlay').style.display = 'block';
             modal.style.display = 'flex';
             modal.querySelector('img').src = div.firstElementChild.src;
+            // console.log("aaa")
+            // console.log(div.firstElementChild.id)
+            openModal(div.id);
         }
+
         const unFocusImage = () => {
             document.querySelector('.image-modal').style.display = 'none';
             document.querySelector('.overlay').style.display = 'none';
@@ -332,8 +448,29 @@ const nestedPosts = nestPosts(simplifiedPosts)
             // }
         });
 
+        document.querySelectorAll('.delete').forEach(delete_btn => {
+            delete_btn.addEventListener('click', () => {
+                showConfirm('Are you sure you want to delete the post?', () => {
+                    const data = {
+                        id: delete_btn.closest('.post').id
+                    }
+                    fetch(`<%= thread %>/deletePost`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                    });
+                });
+            });
+        });
+
         document.querySelectorAll('.reply').forEach(reply_btn => {
             reply_btn.addEventListener('click', () => {
+                // isFilteringEnabled = false;
                 const oldNewPost = document.querySelector('.new-post-container');
                 if (oldNewPost) {
                     oldNewPost.parentNode.removeChild(oldNewPost);
@@ -343,6 +480,46 @@ const nestedPosts = nestPosts(simplifiedPosts)
                     reply_btn.closest('.post').querySelector('.username').innerHTML);
             });
         });
+
+        const deployImg = (src) => {
+            const postImageDiv = document.createElement('div');
+            postImageDiv.className = 'post-image';
+            postImageDiv.id = imageId;
+            postImageDiv.setAttribute('onclick', 'focusImage(this)');
+            const img = document.createElement('img');
+            img.className = 'post-image-src new-post-image-src';
+            img.src = src;
+            img.alt = '';
+            const span = document.createElement('span');
+            span.className = 'focus-image';
+
+            postImageDiv.appendChild(img);
+            postImageDiv.appendChild(span);
+            const container = document.querySelector('.new-post-image-container');
+            const removeImg = document.createElement('span');
+            removeImg.className = 'remove-img';
+            removeImg.addEventListener('click', () => {
+                container.innerHTML = '';
+                const data = {
+                    imageId: imageId,
+                    imageExt: imageExt,
+                }
+                fetch(`<%= thread %>/removeImg`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                imageId = undefined;
+                imageExt = undefined;
+                isFilteringEnabled = false;
+            });
+
+            container.appendChild(postImageDiv);
+            container.appendChild(removeImg);
+            // postDiv.querySelector('.image-selection').style.display = 'none'
+        }
 
         const createNewPost = (id, name) => {
             const postDiv = document.createElement('div');
@@ -415,20 +592,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 .then(data => {
                     imageId = generatedId;
                     imageExt = extension;
-                    const postImageDiv = document.createElement('div');
-                    postImageDiv.className = 'post-image';
-                    postImageDiv.setAttribute('onclick', 'focusImage(this)');
-                    const img = document.createElement('img');
-                    img.className = 'post-image-src new-post-image-src';
-                    img.src = data.filepath;
-                    img.alt = '';
-                    const span = document.createElement('span');
-                    span.className = 'focus-image';
-
-                    postImageDiv.appendChild(img);
-                    postImageDiv.appendChild(span);
-                    document.querySelector('.new-post-image-container').appendChild(postImageDiv);
-                    postDiv.querySelector('.image-selection').style.display = 'none'
+                    deployImg(data.filepath);
                     // document.getElementById('image_view').src = `${data.filepath}?${generateId()}`;
                 });
             });
@@ -449,7 +613,6 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log("lool")
                     location.reload();
                 });
             });
@@ -473,9 +636,9 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 postDiv.style.marginLeft = `${currentMarginLeft + 15}px`;
             }
             // postDiv.style.border = '2px solid #8B4A4A'
-            postDiv.style.boxShadow = '0 -1px 5px 2px #8B4A4A'
-            postDiv.style.borderRadius = '5px'
-            repliesContainer.prepend(postDiv);
+            // postDiv.style.boxShadow = '0 -1px 5px 2px #8B4A4A'
+            // postDiv.style.borderRadius = '5px'
+            repliesContainer.appendChild(postDiv);
         }
         
         // Store the session ID in session storage
