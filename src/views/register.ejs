@@ -8,17 +8,9 @@
     <title>Register</title>
 </head>
 <body>
-    <!-- <div id="register-form">
-        <h3>REGISTER</h3>
-        <input type="text" name="" id="username">
-        <input type="password" name="" id="password">
-        <input type="password" name="" id="retyped-password">
-        <div id="errors"></div>
-        <button id="submit" onclick="">submit</button>
-    </div> -->
+    <div class="icons"></div>
     <div id="register-form" class="form">
         <h2>Register</h2>
-        <!-- <hr> -->
         <div class="credentials">
             <div class="block">
                 <label class="label">Username</label>
@@ -29,8 +21,8 @@
                 <input type="password" name="" id="password" placeholder="Password">
             </div>
             <div class="block">
-                <label class="label">Retype Password</label>
-                <input type="password" name="" id="retyped-password" placeholder="Retype Password">
+                <label class="label">Confirm Password</label>
+                <input type="password" name="" id="retyped-password" placeholder="Confirm Password">
             </div>
         </div>
         <div id="errors"></div>
@@ -43,6 +35,7 @@
 
         <p class="bottom-link">Login</p>
     </div>
+    <script src="/public/scripts/auth.js"></script>
     <script>
         function displayErr(errMessage) {
             const errors = document.querySelectorAll('.error-msg');
@@ -70,19 +63,6 @@
                 return false;
             }
             return true;
-        }
-
-        function findGetParameter(parameterName) {
-            var result = null,
-                tmp = [];
-            location.search
-                .substr(1)
-                .split("&")
-                .forEach(function (item) {
-                tmp = item.split("=");
-                if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-                });
-            return result;
         }
 
         document.getElementById('submit').addEventListener('click', async (ev) => {

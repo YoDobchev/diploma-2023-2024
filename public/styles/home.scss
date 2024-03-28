@@ -2,6 +2,15 @@ body {
     background-color: #272727;
     margin: 0;
 }
+body, a, p, h1, h2, h3, span, textarea, label, button {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    // font-weight: <weight>;
+    font-style: normal;
+    font-variation-settings:
+      "slnt" 0;
+    color: white;
+}
 
 .board-row {
     display: flex;

@@ -9,24 +9,21 @@
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <p><%= user %></p>
-    <div class="threads">
-        <div id="create-thread">
-            <input type="text">
-            <div id="post-container">
-                <div class="image-label-wrapper">
-                    <label for="image-input" id="image-input-label"></label>
+    <div class="row">
+        <div class="threads">
+            <% threads.forEach((thread) => { %>
+                <div onclick="window.location='/<%= board %>/<%= thread.id %>'" class="thread">
+                    <div class="header">
+                        <h3><%= thread.title %></h3>
+                        <span>-</span>
+                        <h4><%= thread.description %></h4>
+                    </div>
+                    <div class="info">
+                        <p class="countdown-timer" data-created-at="<%= thread.createdat %>"></p>
+                    </div>
                 </div>
-                <input id="image-input" type="file" name="image-input" accept="image/png, image/jpeg"/>
-                <input type="text" name="" id="">
-            </div>
-            <p id="create-thread-button">NEW THREAD</p>
+            <% }); %>
         </div>
-        <% threads.forEach((thread) => { %>
-        <div class="thread-row">
-            <a href="/<%= board %>/<%= thread.id %>"><%= thread.id %></a> 
-        </div>
-        <% }); %>
     </div>
     <script>
         function generateId() {
@@ -40,33 +37,57 @@
 
             return id;
         }
+        function updateCountdownTimers() {
+            const timers = document.querySelectorAll('.countdown-timer');
 
-        document.getElementById('create-thread-button').addEventListener('click', () => {
-            const id = generateId();
-            
-            const data = {
-                id: id
-            }
-            fetch('', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(res => {
-                if (res.status == 200) {
-                    // location.reload()
-                    var div = document.createElement("div");
-                    div.className = "thread-row";
-                    let newThreadRow = document.createElement('a');
-                    newThreadRow.href = `/<%= board %>/${id}`;
-                    newThreadRow.textContent = id;
-                    div.appendChild(newThreadRow);
-                    document.querySelector('.threads').appendChild(div);
+            timers.forEach(timer => {
+                const createdAtString = timer.getAttribute('data-created-at');
+                const createdAt = new Date(createdAtString);
+                const deadline = new Date(createdAt.getTime() + 24 * 60 * 60 * 1000);
+                const now = new Date();
+                const remainingTime = deadline - now;
+
+                if (remainingTime > 0) {
+                    const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+                    const minutes = Math.floor((remainingTime / 1000 / 60) % 60);
+                    const seconds = Math.floor((remainingTime / 1000) % 60);
+
+                    timer.innerHTML = `${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    timer.innerHTML = "EXPIRED";
                 }
-            })
-        });
+            });
+        }
+        updateCountdownTimers();
+
+        setInterval(updateCountdownTimers, 1000);
+
+        // document.getElementById('create-thread-button').addEventListener('click', () => {
+        //     const id = generateId();
+            
+        //     const data = {
+        //         id: id
+        //     }
+        //     fetch('', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify(data)
+        //     })
+        //     .then(res => {
+        //         if (res.status == 200) {
+        //             // location.reload()
+        //             var div = document.createElement("div");
+        //             div.className = "thread-row";
+        //             let newThreadRow = document.createElement('a');
+        //             newThreadRow.href = `/<%= board %>/${id}`;
+        //             newThreadRow.textContent = id;
+        //             div.appendChild(newThreadRow);
+        //             document.querySelector('.threads').appendChild(div);
+        //         }
+        //     })
+        // });
     </script>
 </body>
 </html>

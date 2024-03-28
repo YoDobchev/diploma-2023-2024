@@ -39,46 +39,46 @@ export function findPostsByThreadId(thread_id: string): Promise<Posts[]> {
 }
 
 export async function deletePost(postId: string, sessionUsername: string): Promise<void> {
-    const transaction = await db.transaction();
-    try {
-      const post = await Posts.findOne({ where: { id: postId, created_by: sessionUsername }, transaction });
-      if (!post) {
-        throw new Error('Post not found or unauthorized');
-      }
-  
-      await deleteRepliesAndImages(postId, transaction);
-  
-      const images = await Images.findAll({ where: { post_id: postId }, transaction });
-      const imagePaths = images.map(img => img.path);
-      await Images.destroy({ where: { post_id: postId }, transaction });
-  
-      await Posts.destroy({ where: { id: postId }, transaction });
-  
-      await transaction.commit();
-  
-      imagePaths.forEach(async path => await fs.promises.unlink(path));
-  
-    } catch (error) {
-      await transaction.rollback();
-      console.error('Failed to delete post and associated data:', error);
-      throw error;
+  const transaction = await db.transaction();
+  try {
+    const post = await Posts.findOne({ where: { id: postId, created_by: sessionUsername }, transaction });
+    if (!post) {
+      throw new Error('Post not found or unauthorized');
     }
+
+    await deleteRepliesAndImages(postId, transaction);
+
+    const images = await Images.findAll({ where: { post_id: postId }, transaction });
+    const imagePaths = images.map(img => img.path);
+    await Images.destroy({ where: { post_id: postId }, transaction });
+
+    await Posts.destroy({ where: { id: postId }, transaction });
+
+    await transaction.commit();
+
+    imagePaths.forEach(async path => await fs.promises.unlink(path));
+
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Failed to delete post and associated data:', error);
+    throw error;
   }
+}
   
 async function deleteRepliesAndImages(parentId: string, transaction: any): Promise<void> {
-    const replies = await Posts.findAll({ where: { reply_to_id: parentId }, transaction });
-    for (const reply of replies) {
-      const images = await Images.findAll({ where: { post_id: reply.id }, transaction });
-      const imagePaths = images.map(img => img.path);
-      await Images.destroy({ where: { post_id: reply.id }, transaction });
-  
-      await deleteRepliesAndImages(reply.id, transaction);
-  
-      await Posts.destroy({ where: { id: reply.id }, transaction });
-  
-      imagePaths.forEach(async path => await fs.promises.unlink(path)); // Ensure this function handles FS deletion
-    }
+  const replies = await Posts.findAll({ where: { reply_to_id: parentId }, transaction });
+  for (const reply of replies) {
+    const images = await Images.findAll({ where: { post_id: reply.id }, transaction });
+    const imagePaths = images.map(img => img.path);
+    await Images.destroy({ where: { post_id: reply.id }, transaction });
+
+    await deleteRepliesAndImages(reply.id, transaction);
+
+    await Posts.destroy({ where: { id: reply.id }, transaction });
+
+    imagePaths.forEach(async path => await fs.promises.unlink(path));
   }
+}
   
 
 function generateId() {

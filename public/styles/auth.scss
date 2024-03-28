@@ -12,9 +12,30 @@ body, p, h1, h2, h3, span, textarea, label, button {
       "slnt" 0;
     color: white;
 }
+.icons {
+    overflow: hidden;
+    position: absolute;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    .svg-container {
+        position: absolute;
+        // visibility: hidden;
+        will-change: transform;
+        & svg {
+            width: 80px;
+            height: 80px;
+        }
+    }
+}
 
 .form {
+    z-index: 2;
     box-shadow: 0 0 50px 20px #060709;
+    background-color: #272727;
     display: flex;
     flex-direction: column;
     justify-content: center;

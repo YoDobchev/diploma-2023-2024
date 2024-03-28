@@ -1,13 +1,9 @@
 body {
     background-color: #272727;
     margin: 0;
-    // display: flex;
-    // justify-content: center;
-    // align-items: center;
-    // flex-direction: column;
 }
 
-p, h1, h2, h3, span, textarea, a {
+body, a, p, h1, h2, h3, h4, span, textarea, label, button {
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
     // font-weight: <weight>;
@@ -17,50 +13,59 @@ p, h1, h2, h3, span, textarea, a {
     color: white;
 }
 
-.threads {
+.thread {
+
+    // background-color: aqua;
+    $gap: 25px;
+    float: left;
+    width: calc(50% - $gap/2);
+    margin-right: $gap;
+    margin-bottom: 25px;
+    padding-left: 15px;
+    padding-right: 15px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    width: 80%;
-    & .thread-row {
+    border: 1px solid #8B4A4A;
+    background-color: #303030;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    cursor: pointer;
+    
+    & h3, h4 {
+        margin: 0;
+    }
+    @media only screen and (max-width: 600px) {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    & .header {
         display: flex;
+        align-items: center;
+        gap: 8px;
         flex-direction: row;
-        justify-content: center;
-        // width: 100%;
+    }
+    & .info {
+        display: flex;
+        align-items: center;
+        // gap: 8px;
+        flex-direction: row;
     }
 }
 
-#image-input {
-    display: none;
+.row {
+    margin-top: 20px;
+    margin-left: 100px;
+    margin-right: 100px;
+}
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+    // margin-right: 500px;
 }
 
-.image-label-wrapper {
-    border-radius: 5px;
-    background-color: rgba($color: #7a3636, $alpha: 0.2);
-}
-
-#image-input-label {
-    display: block;
-    background-image: url('/public/icons/image-selection.svg');
-    background-size: cover;
-    cursor: pointer;
-    width: 25px;
-    height: 25px;
-    margin: 2px;
-}
-
-p {
-    margin: 0;
-}
-
-#create-thread {
-    display: flex;
-    flex-direction: column;
-    width: 25%;
-    // justify-content: center;
-}
-
-#post-container {
-    display: flex;
-    flex-direction: row;
+.thread:nth-child(2n) {
+    margin-right: 0;
 }
