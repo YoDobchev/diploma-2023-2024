@@ -14,16 +14,17 @@ body, a, p, h1, h2, h3, span, textarea, label, button {
 
 .boards {
     margin-top: 80px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 .board {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
     border: 1px solid #8B4A4A;
     border-radius: 4px;
     background-color: #303030;
@@ -36,6 +37,18 @@ body, a, p, h1, h2, h3, span, textarea, label, button {
     min-height: 80px;
     margin-left: 100px;
     margin-right: 100px;
+
+    & .description {
+        font-size: 0.6em;
+        // color: ;
+    }
+
+    & .divider {
+        height: 1px;
+        width: 95%;
+        // flex-grow: 1;
+        background-color: #414141;
+    }
 
     transition: transform .2s;
     &:hover {

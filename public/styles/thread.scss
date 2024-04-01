@@ -284,23 +284,49 @@ input::-webkit-inner-spin-button {
     }
 }
 
-// #image-icon {
-//     display: block;
-//     background-image: url('/public/icons/image-selection.svg');
-//     background-size: cover;
-//     cursor: pointer;
-//     width: $input-label-height;
-//     height: $input-label-height;
-// }
+.main-container {
+ /* Add padding to account for the .images-scroll width */
+}
 
-// #reply-icon {
-//     background-image: url('/public/icons/reply.svg');
-//     background-size: cover;
-//     cursor: pointer;
-//     width: $input-label-height;
-//     height: $input-label-height;
-//     margin-left: 5px;
-// }
+.post-related-container {
+    // width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 80px;
+    // margin-right: 20vw;
+    flex-grow: 1; 
+    margin-right: 20vw;
+    @media only screen and (max-width: 600px) {
+        margin: 0;
+    }
+}
+
+.images-scroll {
+    padding: 25px;
+    box-sizing: border-box;
+    width: 20vw;
+    position: fixed;
+    top: 80px;
+    right: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: #303030;
+    gap: 50px;
+    display: flex;
+    flex-direction: column;
+    & .block {
+        background-color: #272727;
+        width: 95%;
+        padding: 10 px;
+    }
+    & img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+    @media only screen and (max-width: 600px) {
+        display: none;
+    }
+}
 
 #imageForm { 
     display: flex;
@@ -319,8 +345,9 @@ input::-webkit-inner-spin-button {
 .posts {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
-    margin-top: 80px;
+    // min-height: 100%;
+    // margin-top: 80px;
+    width: 100%;
 }
 
 .replies-container {

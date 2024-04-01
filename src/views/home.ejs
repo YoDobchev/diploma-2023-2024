@@ -12,9 +12,9 @@
     <div class="boards">
         <% boards.forEach((board) => { %>
             <div class="board" onclick="window.location='/<%= board.id %>'">
-                <p><%= board.id %></p> 
-                <p>-</p>
-                <p><%= board.description %></p>
+                <p><%= board.id %></p>
+                <div class="divider"></div>
+                <p class="description"><%= board.description %></p>
             </div>
         <% }); %>
     </div>

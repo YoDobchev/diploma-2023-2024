@@ -3,8 +3,8 @@ const plainPosts = posts.map(post => post.get({ plain: true }));
 plainPosts.sort((a, b) => new Date(a.createdat) - new Date(b.createdat));
 
 function simplifyImages(post) {
-  post.images = post.images.map(image => ({path: image.path, id: image.id}));
-  return post;
+    post.images = post.images.map(image => ({path: image.path, id: image.id}));
+    return post;
 }
 
 const simplifiedPosts = plainPosts.map(post => simplifyImages(post));
@@ -25,7 +25,31 @@ function nestPosts(posts) {
 
     return Array.from(postMap.values()).filter(post => !post.reply_to_id);
 }
-const nestedPosts = nestPosts(simplifiedPosts)
+
+function extractImages(posts) {
+    const images = [];
+
+    function recurseThroughPosts(posts) {
+        posts.forEach(post => {
+            post.images.forEach(image => {
+                images.push({postId: post.id, imagePath: image.path, imageId: image.id});
+            });
+            // If there are replies, go through them recursively
+            if (post.replies && post.replies.length) {
+                recurseThroughPosts(post.replies);
+            }
+        });
+    }
+
+    recurseThroughPosts(posts);
+    return images;
+}
+
+
+const nestedPosts = nestPosts(simplifiedPosts);
+const images = extractImages(nestedPosts);
+console.log('kur')
+<!-- console.log(images) -->
 
 %>
 <!DOCTYPE html>
@@ -84,117 +108,129 @@ const nestedPosts = nestPosts(simplifiedPosts)
             </div>
         </div>
     </div>
-    <div class="posts">
-        <!-- <div class="post">
-            <div class="post-content">
-                <div class="post-header">
-                    <span class="user"></span>
-                    <h2 class="username">gosho ebacha</h2>
-                    <h2 class="date">• feb2</h2>
-                </div>
-                <p class="post-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam et ligula elit. Morbi ut dui viverra, sodales enim a, volutpat dui. In non purus suscipit metus maximus pharetra. Etiam rutrum mollis ipsum non tincidunt. Nulla facilisi. Suspendisse posuere mollis quam sed molestie. Nullam congue vitae nibh ut lobortis. Quisque diam velit, vehicula tincidunt finibus sed, auctor sit amet felis. Donec consectetur ut lectus nec pharetra. Praesent augue libero, faucibus id quam sed, rutrum eleifend tortor.
+    <div class="post-related-container">
 
-                    Nullam massa eros, tincidunt at euismod ultrices, condimentum vel sem. Fusce dictum lectus in eros luctus suscipit. Ut feugiat pharetra ex, eu eleifend lorem tristique nec. Donec est dui, vulputate at diam et, euismod ornare arcu. Sed a ante et dolor finibus sodales. Proin metus metus, lacinia ut viverra id, maximus maximus arcu. Duis id est et massa vehicula placerat. Vivamus vel eleifend sem, eget mollis massa. Nullam nec neque ac ante laoreet dictum a non nulla.
-                    
-                    Sed pellentesque ex elementum urna laoreet hendrerit. Praesent varius ex ut convallis consequat. Ut condimentum enim nec iaculis auctor. Integer non quam et nisl iaculis vestibulum. Cras et ipsum sit amet leo venenatis ullamcorper eu eu justo. Etiam placerat ex non eros bibendum finibus. Phasellus suscipit vulputate arcu vitae facilisis. Aenean eu ex cursus, mollis leo non, luctus tellus. Phasellus eu nibh nec turpis aliquam aliquam.
-                    
-                    Interdum et malesuada fames ac ante ipsum primis in faucibus. Duis feugiat rhoncus magna eu imperdiet. Integer sed orci ac libero cursus porttitor fermentum sed ante. Donec suscipit, dolor et iaculis vestibulum, dui sapien aliquet nunc, sit amet scelerisque arcu libero a eros. Praesent accumsan purus ut augue porta, viverra consectetur nisl feugiat. Cras non vestibulum libero. Ut nisl ligula, placerat non iaculis sit amet, posuere nec urna. Nulla fringilla, elit id venenatis mattis, diam risus blandit ante, vitae luctus nulla est ac odio. Praesent vel leo consequat, dignissim risus et, dictum massa. In hac habitasse platea dictumst. Proin tincidunt metus a velit porttitor malesuada.
-                    
-                    Nam lorem nunc, sollicitudin ac lorem sit amet, porttitor consectetur ipsum. Sed varius sem a tellus accumsan, quis tincidunt massa placerat. Cras placerat consectetur tincidunt. Quisque molestie quam id ultricies fringilla. Etiam lacinia diam sit amet lorem tempor, at imperdiet lorem sagittis. Nunc in scelerisque lorem. Maecenas feugiat cursus cursus.</p>
-
-                <div class="post-image" onclick="focusImage(this)">
-                    <img class="post-image-src" src="/public/images/temp/original/input.jpg" alt="">
-                    <span class="focus-image"></span>
-                </div>
-
-                <hr>
-
-                <div class="icon-bar">
-                    <span class="heart"></span>
-                    <span class="reply"></span>
-                </div>
-            </div>
-            <div class="expand">
-                <div>
-                    <span></span>
-                </div>
-            </div>
-            
-        </div> -->
-        
-        <%
-        function renderPosts(posts, level = 0) {
-            posts.forEach(post => {
-                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                const month = monthNames[post.createdat.getMonth()];
-                const day = post.createdat.getDate();
-                let hours = post.createdat.getHours();
-                let minutes = post.createdat.getMinutes();
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                const formattedDate = `${month} ${day} ${hours}:${minutes}`;
-        %>
-        <div class="post" id="<%= post.id %>" style="margin-left: <%= (level + 1) * 15 %>px;">
-            <div class="post-content">
-                <div class="post-header">
-                    <span class="user"></span>
-                    <h2 class="username"><%= post.created_by ? post.created_by : 'Anonymous' %></h2>
-                    <h2 class="date">• <%= formattedDate %></h2>
-                </div>
-                <p class="post-text"><%= post.text %></p>
-                <%
-                    if (post.images.length > 0) {
-                %>
-                <div class="post-image-container">
-                    <div class="post-image" onclick="focusImage(this)">
-                    <img class="post-image-src" src="/<%= post.images[0].path %>" id="<%= post.images[0].id %>">
-                    <span class="focus-image"></span>
-                </div>
-                </div>
-
-                <%
-                    }
-                %>
-                <hr>
-
-                <div class="icon-bar">
-                    <!-- <span class="heart"></span> --> 
-                    <% if (user && (post.created_by == user || user == 'admin')) { %>
-                        <span class="delete"></span>
-                    <% } %>
-                    <span class="reply"></span>
-                </div>
-            </div>
-            <% if (post.replies && post.replies.length > 0) {%>
-            <div class="expand">
-                <div>
-                    <span></span>
-                </div>
-            </div>
-            <%}%>
-        </div>
-            <div class="replies-container" id="<%= post.id %>-replies">
-            <%
-                    // Check if the current post has replies and render them
-                    if (post.replies && post.replies.length > 0) {
-            %>
-                        <% renderPosts(post.replies, level + 1); %>
-                        <%}%>
+        <div class="posts">
+            <!-- <div class="post">
+                <div class="post-content">
+                    <div class="post-header">
+                        <span class="user"></span>
+                        <h2 class="username">gosho ebacha</h2>
+                        <h2 class="date">• feb2</h2>
                     </div>
-        <%
-            });
-        }
+                    <p class="post-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam et ligula elit. Morbi ut dui viverra, sodales enim a, volutpat dui. In non purus suscipit metus maximus pharetra. Etiam rutrum mollis ipsum non tincidunt. Nulla facilisi. Suspendisse posuere mollis quam sed molestie. Nullam congue vitae nibh ut lobortis. Quisque diam velit, vehicula tincidunt finibus sed, auctor sit amet felis. Donec consectetur ut lectus nec pharetra. Praesent augue libero, faucibus id quam sed, rutrum eleifend tortor.
+    
+                        Nullam massa eros, tincidunt at euismod ultrices, condimentum vel sem. Fusce dictum lectus in eros luctus suscipit. Ut feugiat pharetra ex, eu eleifend lorem tristique nec. Donec est dui, vulputate at diam et, euismod ornare arcu. Sed a ante et dolor finibus sodales. Proin metus metus, lacinia ut viverra id, maximus maximus arcu. Duis id est et massa vehicula placerat. Vivamus vel eleifend sem, eget mollis massa. Nullam nec neque ac ante laoreet dictum a non nulla.
+                        
+                        Sed pellentesque ex elementum urna laoreet hendrerit. Praesent varius ex ut convallis consequat. Ut condimentum enim nec iaculis auctor. Integer non quam et nisl iaculis vestibulum. Cras et ipsum sit amet leo venenatis ullamcorper eu eu justo. Etiam placerat ex non eros bibendum finibus. Phasellus suscipit vulputate arcu vitae facilisis. Aenean eu ex cursus, mollis leo non, luctus tellus. Phasellus eu nibh nec turpis aliquam aliquam.
+                        
+                        Interdum et malesuada fames ac ante ipsum primis in faucibus. Duis feugiat rhoncus magna eu imperdiet. Integer sed orci ac libero cursus porttitor fermentum sed ante. Donec suscipit, dolor et iaculis vestibulum, dui sapien aliquet nunc, sit amet scelerisque arcu libero a eros. Praesent accumsan purus ut augue porta, viverra consectetur nisl feugiat. Cras non vestibulum libero. Ut nisl ligula, placerat non iaculis sit amet, posuere nec urna. Nulla fringilla, elit id venenatis mattis, diam risus blandit ante, vitae luctus nulla est ac odio. Praesent vel leo consequat, dignissim risus et, dictum massa. In hac habitasse platea dictumst. Proin tincidunt metus a velit porttitor malesuada.
+                        
+                        Nam lorem nunc, sollicitudin ac lorem sit amet, porttitor consectetur ipsum. Sed varius sem a tellus accumsan, quis tincidunt massa placerat. Cras placerat consectetur tincidunt. Quisque molestie quam id ultricies fringilla. Etiam lacinia diam sit amet lorem tempor, at imperdiet lorem sagittis. Nunc in scelerisque lorem. Maecenas feugiat cursus cursus.</p>
+    
+                    <div class="post-image" onclick="focusImage(this)">
+                        <img class="post-image-src" src="/public/images/temp/original/input.jpg" alt="">
+                        <span class="focus-image"></span>
+                    </div>
+    
+                    <hr>
+    
+                    <div class="icon-bar">
+                        <span class="heart"></span>
+                        <span class="reply"></span>
+                    </div>
+                </div>
+                <div class="expand">
+                    <div>
+                        <span></span>
+                    </div>
+                </div>
+                
+            </div> -->
+            
+            <%
+            function renderPosts(posts, level = 0) {
+                posts.forEach(post => {
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    const month = monthNames[post.createdat.getMonth()];
+                    const day = post.createdat.getDate();
+                    let hours = post.createdat.getHours();
+                    let minutes = post.createdat.getMinutes();
+                    minutes = minutes < 10 ? '0' + minutes : minutes;
+                    const formattedDate = `${month} ${day} ${hours}:${minutes}`;
+            %>
+            <div class="post" id="<%= post.id %>" style="margin-left: <%= (level + 1) * 15 %>px;">
+                <div class="post-content">
+                    <div class="post-header">
+                        <span class="user"></span>
+                        <h2 class="username"><%= post.created_by ? post.created_by : 'Anonymous' %></h2>
+                        <h2 class="date">• <%= formattedDate %></h2>
+                    </div>
+                    <p class="post-text"><%= post.text %></p>
+                    <%
+                        if (post.images.length > 0) {
+                    %>
+                    <div class="post-image-container">
+                        <div class="post-image" onclick="focusImage(this)">
+                        <img class="post-image-src" src="/<%= post.images[0].path %>" id="<%= post.images[0].id %>">
+                        <span class="focus-image"></span>
+                    </div>
+                    </div>
 
-        renderPosts(nestedPosts);
-        %>
-    </div>
-    <div class="new-post-container-to-thread">
-        <% if (nestedPosts.length == 0) { %>
-            <p></p>
-        <% } %>
-        <div class="new-post-icon" onclick="createNewPost()">
-            <span></span>
+                    <%
+                        }
+                    %>
+                    <hr>
+
+                    <div class="icon-bar">
+                        <!-- <span class="heart"></span> --> 
+                        <% if (user && (post.created_by == user || user == 'admin')) { %>
+                            <span class="delete"></span>
+                        <% } %>
+                        <span class="reply"></span>
+                    </div>
+                </div>
+                <% if (post.replies && post.replies.length > 0) {%>
+                <div class="expand">
+                    <div>
+                        <span></span>
+                    </div>
+                </div>
+                <%}%>
+            </div>
+                <div class="replies-container" id="<%= post.id %>-replies">
+                <%
+                        // Check if the current post has replies and render them
+                        if (post.replies && post.replies.length > 0) {
+                %>
+                            <% renderPosts(post.replies, level + 1); %>
+                            <%}%>
+                        </div>
+            <%
+                });
+            }
+    
+            renderPosts(nestedPosts);
+            %>
+        </div>
+        <div class="new-post-container-to-thread">
+            <% if (nestedPosts.length == 0) { %>
+                <p></p>
+            <% } %>
+            <div class="new-post-icon" onclick="createNewPost()">
+                <span></span>
+            </div>
         </div>
     </div>
+    <% if (images.length != 0) { %>
+    <div class="images-scroll">
+        <% images.forEach(image => { %>
+            <div class="block">
+                <img src="/<%= image.imagePath %>" alt="">
+            </div>
+        <% }); %>
+    </div>
+    <% } %>
     <script>
         var imageId, imageExt, currentlyReviewingId, isFilteringEnabled = false , isCurrentlyExpectingFiltered = false;
 
@@ -476,6 +512,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
         });
 
         const deployImg = (src) => {
+            document.querySelector('.image-selection').style.display = 'none';
             const postImageDiv = document.createElement('div');
             postImageDiv.className = 'post-image';
             postImageDiv.id = imageId;
@@ -508,6 +545,7 @@ const nestedPosts = nestPosts(simplifiedPosts)
                 imageId = undefined;
                 imageExt = undefined;
                 isFilteringEnabled = false;
+                document.querySelector('.image-selection').style.display = 'block';
             });
 
             container.appendChild(postImageDiv);
