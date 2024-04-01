@@ -19,7 +19,7 @@ class Boards extends Model<Boards> {
     allowNull: false
   })
   declare description: string;
-}
+};
 
 
 export default Boards;

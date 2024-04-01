@@ -10,13 +10,17 @@ body, a, p, h1, h2, h3, h4, span, textarea, label, button {
     font-style: normal;
     font-variation-settings:
       "slnt" 0;
-    color: white;
+    // color: white;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .thread {
-
-    // background-color: aqua;
-    $gap: 25px;
+    $gap: 32px;
     float: left;
     width: calc(50% - $gap/2);
     margin-right: $gap;
@@ -26,11 +30,18 @@ body, a, p, h1, h2, h3, h4, span, textarea, label, button {
     display: flex;
     flex-direction: column;
     border: 1px solid #8B4A4A;
+    border-radius: 4px;
     background-color: #303030;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     cursor: pointer;
+    color: white;
+
+    transition: transform .2s;
+    &:hover {
+        transform: scale(1.1);
+    }
     
     & h3, h4 {
         margin: 0;
@@ -45,25 +56,163 @@ body, a, p, h1, h2, h3, h4, span, textarea, label, button {
         align-items: center;
         gap: 8px;
         flex-direction: row;
+        margin-top: 10px;
+        // margin-left: 10px;
     }
     & .info {
         display: flex;
         align-items: center;
-        // gap: 8px;
+        gap: 10px;
+        color: #6F6F6F !important;
         flex-direction: row;
+        font-size: 1.1em;
+        & .block {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            & span {
+                display: inline-block;
+                background-size: cover;
+                width: 18px;
+                height: 18px;
+                margin-right: 5px;
+            }
+            & p {
+                padding-top: 2px;
+            }
+            
+            & .user-icon {
+                background-image: url('/public/icons/user-grey.svg');
+            }
+            & .timer-icon {
+                background-image: url('/public/icons/time.svg');
+            }
+            & .reply-icon {
+                margin-right: 2px;
+                background-image: url('/public/icons/reply-grey.svg');
+            }
+            & .red {
+                color: #c49c95;
+            }
+        }
     }
 }
 
 .row {
-    margin-top: 20px;
+    margin-top: 80px;
     margin-left: 100px;
     margin-right: 100px;
+    @media only screen and (max-width: 600px) {
+        margin-left: 18px;
+        margin-right: 18px;
+    }
 }
+
 .row:after {
     content: "";
     display: table;
     clear: both;
-    // margin-right: 500px;
+}
+
+.new-container {
+    display: none;
+    width: 45%;
+    background-color: #303030;
+    box-shadow: 0 0 5px 2px #8B4A4A;
+    border-radius: 5px;
+    flex-direction: column;
+    padding: 10px;
+    color: white;
+
+    @media only screen and (max-width: 600px) {
+        width: auto;
+        margin-left: 18px;
+        margin-right: 18px;
+    }
+
+    & .divider {
+        height: 1px;
+        flex-grow: 1;
+        background-color: #414141;
+    }
+
+    & .custom-url-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        & textarea {
+            width: 100%;
+            color: #414141;
+            font-size: 18px;
+            height: 21px;
+        }
+    }
+
+    & h3 {
+        align-self: center;
+        text-decoration: wavy;
+        font-weight: bolder;
+        & board {
+            color: #FFC3BA;
+        }
+    }
+    & p {
+        margin: 0;
+        margin-top: 15px;
+    }
+    // & p:nth-child(3) {
+    //     margin-top: 20px;
+    // }
+    & textarea {
+        margin-top: 10px;
+        background-color: transparent;
+        border: 0;
+        color: white;
+        word-break: break-all;
+        resize: none;
+        border: 1px solid #414141;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+    & button {
+        margin-top: 10px;
+        font-size: 1.2em;
+        color: white;
+        background-color: #c49c95;
+        border: 0;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 8px;
+    }
+    // height: 200px;
+}
+
+.new-thread-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+
+    & .new-thread-icon {
+        background-color: #FFC3BA;
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        & span {
+            display: inline-block;
+            background-image: url(/public/icons/plus.svg);
+            background-size: cover;
+            width: 30px;
+            height: 30px;
+        }
+    }
 }
 
 .thread:nth-child(2n) {

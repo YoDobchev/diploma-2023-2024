@@ -1,9 +1,7 @@
 import { Router, Request } from "express";
 import multer from "multer";
-import path from 'path';
 import Jimp from "jimp";
 import fs from 'fs';
-import Posts from "../models/Posts.model";
 import { createPost, deletePost, findPostsByThreadId } from "../functions/common";
 import Threads from "../models/Threads.model";
 
@@ -11,7 +9,7 @@ const Thread = Router({ mergeParams: true });
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/images/temp/original')
+        cb(null, 'public/images/temp/original');
     },
     filename: (req, file, cb) => {
         cb(null, String(req.headers['image-filename']));
@@ -39,8 +37,7 @@ Thread.get('/:thread', async (req: ThreadRequest, res) => {
     if (!Thread) {
       res
         .status(404)
-        .render('error.ejs', { code: 404, message: "Thread not found!"})
-
+        .render('error.ejs', { code: 404, message: "Thread not found!"});
       return;
     }
 
@@ -49,7 +46,6 @@ Thread.get('/:thread', async (req: ThreadRequest, res) => {
 });
 
 Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
-    console.log(req.session.username)
     if (!req.file) {
         return res.status(400).json({ error: "No file uploaded." });
     }
@@ -73,10 +69,10 @@ Thread.patch('/:thread/filter', async (req, res) => {
     var options = [];
     for (const setting in filterSettings) {
         if (filterSettings.hasOwnProperty(setting) && filterSettings[setting].value != filterSettings[setting].defaultValue) {
-            options.push({apply: filterSettings[setting].label.toLowerCase(), params: [Number(filterSettings[setting].value)]})
+            options.push({apply: filterSettings[setting].label.toLowerCase(), params: [Number(filterSettings[setting].value)]});
         }
     }
-    console.log(options)
+    console.log(options);
 
     const imagePath = `public/images/temp/original/${imageId}.${imageExt}`;
     const outputPath = `public/images/temp/filtered/${imageId}.${imageExt}`;
@@ -84,7 +80,7 @@ Thread.patch('/:thread/filter', async (req, res) => {
     const image = await Jimp.read(imagePath);
     // @ts-ignore
     await image.color(options).writeAsync(outputPath);
-    res.json({ filepath: '/public/images/temp/filtered/' + imageId + '.' + imageExt})
+    res.json({ filepath: '/public/images/temp/filtered/' + imageId + '.' + imageExt});
 });
 
 Thread.post('/:thread/createPost', async (req, res) => {
@@ -104,7 +100,7 @@ Thread.post('/:thread/createPost', async (req, res) => {
         }
     }
 
-    await createPost(req.params.thread, req.body.text, req.session.username, req.body.replyToId, imageId, outputFile)
+    await createPost(req.params.thread, req.body.text, req.session.username, req.body.replyToId, imageId, outputFile);
     res.status(200).json({});
 });
 
@@ -124,7 +120,7 @@ Thread.delete('/:thread/deletePost', async (req, res) => {
     }
 
     try {
-        await deletePost(id, username);    
+        await deletePost(id, username);
     } catch (error) {
         console.error('Failed to delete post:', error);
         res.status(500).json({ message: 'An error occurred while deleting the post' });

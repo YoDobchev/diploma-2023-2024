@@ -5,15 +5,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/public/styles/home.css">
-    <title>Document</title>
+    <title>Home</title>
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <% boards.forEach((board) => { %>
-        <div class="board-row">
-            <a href="/<%= board.id %>"><%= board.id %></a> 
-            <p> - <%= board.description %></p>
+    <div class="boards">
+        <% boards.forEach((board) => { %>
+            <div class="board" onclick="window.location='/<%= board.id %>'">
+                <p><%= board.id %></p> 
+                <p>-</p>
+                <p><%= board.description %></p>
+            </div>
+        <% }); %>
+    </div>
+    <% if (user == 'admin') { %>
+        <div class="new-board-container">
+            <div class="new-container">
+                <h3>Creating a new discussion board...</h3>
+                <div class="divider"></div>
+                <p id="new-title-p">Title*</p>
+                <textarea name="" id="new-title" placeholder="Title"></textarea>
+                <p>Description</p>
+                <textarea name="" id="new-description" rows="5" placeholder="Description"></textarea>
+                <button id="new-board-button">Create Thread</button>
+            </div>
+            <div class="new-board-icon">
+                <span></span>
+            </div>
         </div>
-    <% }); %>
+        <script>
+            document.querySelector('.new-board-icon').addEventListener('click', () => {
+                document.querySelector('.new-board-icon').style.display = 'none';
+                document.querySelector('.new-container').style.display = 'flex';
+            });
+        </script>
+    <% } %>
 </body>
 </html>

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import Thread from './thread';
 import Boards from '../models/Boards.model';
 import Threads from '../models/Threads.model'; 
-
+import { deleteThread, findThreads } from '../functions/common';
 const Board = Router();
 
 Board.use('/:board', Thread);
@@ -18,19 +18,26 @@ Board.get('/:board', async (req, res) => {
 
       return;
     }
-
-    const threads = await Threads.findAll({where: { board_id }})
-    console.log(req.session.username)
+    const threads = await findThreads(board_id);
     res.render('board.ejs', { board: board_id, threads: threads, user: req.session.username })
 });
 
 Board.post('/:board', async (req, res) => {
-  const board_id = req.params.board;
-  const id = req.body.id;
-  
-  const newThread: any = { id, board_id };
-  
+  const board = req.params.board;
+  const { threadId, title, description }= req.body;
+
+  const newThread: any = {
+    id: threadId, 
+    board_id: board, 
+    title: title, 
+    description: description,
+    created_by: req.session.username,
+    createdat: new Date().toUTCString(),
+  };
+
   await Threads.create(newThread);
+
+  setTimeout(() => deleteThread(threadId), 24 * 60 * 60 * 1000);
   res.status(200).send("Thread created successfully");
 });
 

@@ -1,6 +1,7 @@
-import { Table, Column, Model, DataType, PrimaryKey, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, ForeignKey, HasMany } from 'sequelize-typescript';
 import Boards from './Boards.model'
 import Users from './Users.model';
+import Posts from './Posts.model';
 
 @Table({
   tableName: 'Threads',
@@ -23,6 +24,13 @@ class Threads extends Model<Threads> {
   })
   declare board_id: string;
 
+  @ForeignKey(() => Users)
+  @Column({
+    type: DataType.STRING,
+    allowNull: true
+  })
+  declare created_by: string;
+
   @Column({
     type: DataType.STRING,
     allowNull: false
@@ -31,16 +39,18 @@ class Threads extends Model<Threads> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false
+    allowNull: true
   })
   declare description: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: true
   })
   declare createdat: Date;
-}
-  
-  
+
+  @HasMany(() => Posts)
+  declare posts: Posts[];
+};
+
 export default Threads;

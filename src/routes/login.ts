@@ -5,7 +5,7 @@ import Users from "../models/Users.model";
 const Login =  Router();
 
 Login.get('/', (req, res) => {
-    res.render('login.ejs')
+    res.render('login.ejs');
 });
 
 Login.post('/', async (req, res) => {

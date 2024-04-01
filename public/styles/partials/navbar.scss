@@ -1,6 +1,18 @@
+$nav-height: 60px;
 .navbar {
-    height: 60px;
+    height: $nav-height;
     background-color: #9B3424;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "slnt" 0;
+    color: white;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+
     & .navbar-navigation {
         float: left;
         display: flex;
@@ -59,12 +71,15 @@
             // background-color: #f9f9f9;
             // min-width: 160px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            background-color: #272727;
+
             z-index: 1;
             & .a-container {
                 height: 100%;
                 width: 100%;
                 display: block;
                 a {
+                    color: white;
                     margin: 10px;
                     float: right;
                     justify-content: flex-end;

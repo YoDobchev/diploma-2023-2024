@@ -1,4 +1,4 @@
-import express, {Express} from 'express';
+import express, { Express } from 'express';
 import path from 'path';
 import 'dotenv/config';
 import { db } from '../init/db';
@@ -37,8 +37,9 @@ app.use('/logout', Logout);
 app.use('/register', Register);
 app.use('/', Board);
 
-db.authenticate();
-
-app.listen(3000, () => {
+import { setupTimers } from '../functions/common';
+app.listen(3000, async () => {
     console.log('Server is running on port 3000');
+    await db.authenticate();
+    setupTimers();
 });

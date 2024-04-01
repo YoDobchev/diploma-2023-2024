@@ -20,5 +20,3 @@ db.addModels([
     Images,
     Users,
 ]);
-
-db.authenticate();

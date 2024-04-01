@@ -5,7 +5,7 @@ import Users from "../models/Users.model";
 const Register =  Router();
 
 Register.get('/', (req, res) => {
-    res.render('register.ejs')
+    res.render('register.ejs');
 });
 
 Register.post('/', async (req, res) => {
