@@ -138,16 +138,19 @@ export const setupTimers = async (): Promise<void> => {
     const now = new Date().getTime();
 
     rows.forEach(row => {
+
       const creationDate = new Date(row.createdat).getTime();
-      const duration = 5 * 60 * 1000;
+      const duration = 24 * 60 * 60 * 1000;
       const timeSinceCreation = now - creationDate;
       const timeUntilAction = duration - timeSinceCreation;
+      console.log(timeUntilAction)
       if (timeUntilAction > 0) {
         setTimeout(() => deleteThread(row.id), timeUntilAction);
-      } 
-      // else {
-      //   deleteThread(row.id);
-      // }
+      }
+
+      else {
+        deleteThread(row.id);
+      }
     });
   } catch (error) {
     console.error('Error setting up timers:', error);
