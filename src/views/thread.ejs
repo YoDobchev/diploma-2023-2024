@@ -45,11 +45,8 @@ function extractImages(posts) {
     return images;
 }
 
-
 const nestedPosts = nestPosts(simplifiedPosts);
 const images = extractImages(nestedPosts);
-console.log('kur')
-console.log(nestedPosts)
 
 %>
 <!DOCTYPE html>
@@ -91,20 +88,6 @@ console.log(nestedPosts)
                         <span class="filter-settings-icon"></span>
                     </div>
                 </div>
-                <!-- <div class="filter-container">
-                    <h3>HUE</h3>
-                    <div class="input-container">
-                        <p>0</p>
-                        <input min="0" max="360" value="50" type="range">
-                        <p>50</p>
-                    </div>
-                    <hr>
-                </div> -->
-
-                <!-- <p>Edit image</p>
-                <div>
-                    <span class="edit-image"></span>
-                </div> -->
             </div>
         </div>
     </div>
@@ -208,16 +191,36 @@ console.log(nestedPosts)
             BLUE: { label: 'BLUE', min: 0, max: 255, value: 0, defaultValue: 0 },
         };
 
-        const debounce = (callback, wait) => {
-            let timeoutId = null;
-
-            return (...args) => {
-                window.clearTimeout(timeoutId);
-                timeoutId = window.setTimeout(() => {
-                callback.apply(this, args);
-                }, wait);
-            };
+        function getArrayFromQueryString(parameterName) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const items = urlParams.get(parameterName);
+            return items ? items.split(',') : [];
         }
+
+        function addItemToArray(parameterName, item) {
+            const items = getArrayFromQueryString(parameterName);
+            if (!items.includes(item)) {
+                items.push(item);
+                updateQueryString(parameterName, items);
+            }
+        }
+
+        function removeItemFromArray(parameterName, item) {
+            let items = getArrayFromQueryString(parameterName);
+            items = items.filter(i => i !== item);
+            updateQueryString(parameterName, items);
+        }
+
+        function updateQueryString(parameterName, items) {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (items.length > 0) {
+                urlParams.set(parameterName, items.join(','));
+            } else {
+                urlParams.delete(parameterName);
+            }
+            window.history.pushState({}, '', `${window.location.pathname}?${urlParams}`);
+        }
+
         let confirmCallback = null;
 
         function showConfirm(question, callback) {
@@ -421,15 +424,21 @@ console.log(nestedPosts)
             const expandBtn = document.getElementById(id).querySelector('.expand').querySelector('span');
 
             if (shouldOnlyExpand) {
+                addItemToArray('expanded', id);
                 repliesSection.style.display = 'block';
                 expandBtn.style.backgroundImage = 'url("/public/icons/minimize-sign.svg")';
                 return;
             }
+            repliesSection.style.display === 'block' ? removeItemFromArray('expanded', id) : addItemToArray('expanded', id); 
             repliesSection.style.display = repliesSection.style.display === 'block' ? 'none' : 'block';
             expandBtn.style.backgroundImage = repliesSection.style.display === 'block' 
                 ? 'url("/public/icons/minimize-sign.svg")'
-                : 'url("/public/icons/plus.svg")'; 
+                : 'url("/public/icons/plus.svg")';
         }
+
+        getArrayFromQueryString('expanded').forEach(postId => {
+            expandPost(postId);
+        });
 
         document.querySelectorAll('.expand div').forEach(expandBtn => {
             expandBtn.addEventListener('click', () => {
@@ -442,11 +451,6 @@ console.log(nestedPosts)
                 this.nextElementSibling.innerHTML = input.value;
                 changeRangeInputGradient(input);
             }
-
-            // input.nextElementSibling.oninput = function () {
-            //     input.value = input.nextElementSibling.value;
-            //     changeRangeInputGradient(input);
-            // }
         });
 
         document.querySelectorAll('.delete').forEach(delete_btn => {
@@ -464,6 +468,7 @@ console.log(nestedPosts)
                     })
                     .then(response => response.json())
                     .then(data => {
+                        location.reload();
                     });
                 });
             });
@@ -637,7 +642,6 @@ console.log(nestedPosts)
                     imageId = generatedId;
                     imageExt = extension;
                     deployImg(data.filepath);
-                    // document.getElementById('image_view').src = `${data.filepath}?${generateId()}`;
                 });
             });
 
@@ -679,9 +683,6 @@ console.log(nestedPosts)
                 const currentMarginLeft = parseInt(document.querySelector(`[id="${id}"]`).style.marginLeft) || 0;
                 postDiv.style.marginLeft = `${currentMarginLeft + 15}px`;
             }
-            // postDiv.style.border = '2px solid #8B4A4A'
-            // postDiv.style.boxShadow = '0 -1px 5px 2px #8B4A4A'
-            // postDiv.style.borderRadius = '5px'
             repliesContainer.appendChild(postDiv);
         }
     </script>

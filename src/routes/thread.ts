@@ -121,6 +121,7 @@ Thread.delete('/:thread/deletePost', async (req, res) => {
 
     try {
         await deletePost(id, username);
+        res.status(200).json({ message: 'Post deleted successfully' });
     } catch (error) {
         console.error('Failed to delete post:', error);
         res.status(500).json({ message: 'An error occurred while deleting the post' });

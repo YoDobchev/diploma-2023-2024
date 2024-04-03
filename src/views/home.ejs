@@ -38,6 +38,30 @@
                 document.querySelector('.new-board-icon').style.display = 'none';
                 document.querySelector('.new-container').style.display = 'flex';
             });
+
+            document.getElementById('new-board-button').addEventListener('click', () => {
+                const title = document.getElementById('new-title').value;
+                if (!title) {
+                    document.getElementById('new-title').classList.add('reminder');
+                }
+                const description = document.getElementById('new-description').value;
+                const data = {
+                    title: title,
+                    description: description
+                }
+                fetch('/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(res => {
+                    if (res.status == 200) {
+                        location.reload();
+                    }
+                })
+            });
         </script>
     <% } %>
 </body>

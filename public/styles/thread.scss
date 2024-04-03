@@ -375,6 +375,7 @@ input::-webkit-inner-spin-button {
     align-items: center;
     flex-direction: column;
     margin-bottom: 15px;
+    margin-top: 15px;
     & div {
         background-color: #FFC3BA;
         width: 45px;
@@ -387,7 +388,7 @@ input::-webkit-inner-spin-button {
     }
     & span {
         display: inline-block;
-        background-image: url('/public/icons/plus.svg');
+        background-image: url('/public/icons/reply-black.svg');
         background-size: cover;
         width: 30px;
         height: 30px;
@@ -472,6 +473,9 @@ input::-webkit-inner-spin-button {
         border: 1px solid #414141;
         border-radius: 5px;
         margin-bottom: 5px;
+        &:focus {
+            outline: none !important;
+        }
     }
     & .new-post-image-container {
         margin-top: 5px;
