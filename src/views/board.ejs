@@ -5,36 +5,52 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/public/styles/board.css">
-    <title><%= board %></title>
+    <link rel="shortcut icon" href="/public/icons/icon.svg" type="image/x-icon">
+    <title><%= board %> | LensBrew</title>
 </head>
 <body>
     <%- include('partials/navbar') %>
+    <div id="customConfirmBox">
+        <div class="confirm-content">
+            <p id="confirmQuestion">Do you want to proceed?</p>
+            <div>
+                <button onclick="handleConfirm(true)">Confirm</button>
+                <button onclick="handleConfirm(false)">Cancel</button>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="threads">
             <% threads.sort((a, b) =>  new Date(b.createdat) - new Date(a.createdat)); %>
             <% threads.forEach((thread) => { %>
-                <div onclick="window.location='/<%= board %>/<%= thread.id %>'" class="thread">
-                    <div class="header">
-                        <h3><%= thread.title %></h3>
-                        <% if (thread.description) { %>
-                            <span>-</span>
-                            <h4><%= thread.description %></h4>
-                        <% } %>
-                    </div>
-                    <div class="info">
-                        <div class="block">
-                            <span class="user-icon"></span>
-                            <p><%= thread.created_by ? thread.created_by : 'Anonymous' %></p>
+                <div class="thread">
+                        <a href="/<%= board %>/<%= thread.id %>">
+                        <div class="header">
+                            <h3><%= thread.title %></h3>
+                            <% if (thread.description) { %>
+                                <h4><%= thread.description %></h4>
+                            <% } %>
                         </div>
-                        <div class="block">
-                            <span class="timer-icon"></span>
-                            <p class="countdown-timer" data-created-at="<%= thread.createdat %>"></p>
+                        <div class="info">
+                            <div class="block">
+                                <span class="user-icon"></span>
+                                <p><%= thread.created_by ? thread.created_by : 'Anonymous' %></p>
+                            </div>
+                            <div class="block">
+                                <span class="timer-icon"></span>
+                                <p class="countdown-timer" data-created-at="<%= thread.createdat %>"></p>
+                            </div>
+                            <div class="block">
+                                <span class="reply-icon"></span>
+                                <p>: <%= thread.dataValues.postsCount %></p>
+                            </div>
+                            <% if (user && (thread.created_by == user || user == 'admin')) { %>
+                                <div class="block">
+                                    <span class="delete-thread-icon" threadId="<%= thread.id %>"></span>
+                                </div>
+                            <% } %>
                         </div>
-                        <div class="block">
-                            <span class="reply-icon"></span>
-                            <p>: <%= thread.dataValues.postsCount %></p>
-                        </div>
-                    </div>
+                    </a>
                 </div>
             <% }); %>
         </div>
@@ -71,6 +87,20 @@
             return id;
         }
 
+        function showConfirm(question, callback) {
+            document.getElementById('confirmQuestion').innerText = question;
+            document.getElementById('customConfirmBox').style.display = 'flex';
+            confirmCallback = callback;
+        }
+
+        function handleConfirm(isConfirmed) {
+            document.getElementById('customConfirmBox').style.display = 'none';
+            if (isConfirmed && typeof confirmCallback === 'function') {
+                confirmCallback();
+            }
+            confirmCallback = null;
+        }
+
         // document.getElementById('custom-url').value = generateId()
 
         function updateCountdownTimers() {
@@ -99,6 +129,30 @@
 
         setInterval(updateCountdownTimers, 1000);
 
+        document.querySelectorAll('.delete-thread-icon').forEach(deleteBtn => {
+            deleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showConfirm('Are you sure you want to delete this thread?', () => {
+                    const data = {
+                        threadId: deleteBtn.getAttribute('threadid')
+                    }
+                    fetch('/<%= board %>', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(res => {
+                        if (res.status == 200) {
+                            location.reload();
+                        }
+                    });
+                });
+            });
+        });
+
         document.querySelector('.new-thread-icon').addEventListener('click', () => {
             document.querySelector('.new-thread-icon').style.display = 'none';
             document.querySelector('.new-container').style.display = 'flex';
@@ -125,9 +179,9 @@
             })
             .then(res => {
                 if (res.status == 200) {
-                    window.location = `/<%= board %>/${threadId}`
+                    location.reload();
                 }
-            })
+            });
         });
     </script>
 </body>

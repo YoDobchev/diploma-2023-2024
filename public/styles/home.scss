@@ -13,12 +13,44 @@ body, a, p, h1, h2, h3, span, textarea, label, button {
 }
 
 .boards {
-    margin-top: 80px;
+    margin-top: 20px;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
+
+.banner {
+    width: 100%;
+    margin-top: 80px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    & .logo {
+        width: 100px;
+        height: 100px;
+        background-size: cover;
+        display: inline-block;
+        background-image: url('/public/icons/icon.svg');
+        @media only screen and (max-width: 600px) {
+            width: 50px;
+            height: 50px;
+        }
+    }
+    & h1 {
+        color: #FFC3BA;
+        font-size: 100px;
+        @media only screen and (max-width: 600px) {
+            font-size: 50px;
+        }
+    }
+}
+
+a {
+    text-decoration: none;
+}
+
 .board {
     display: flex;
     flex-direction: column;
@@ -38,16 +70,41 @@ body, a, p, h1, h2, h3, span, textarea, label, button {
     margin-left: 100px;
     margin-right: 100px;
 
-    & .description {
-        font-size: 0.6em;
-        // color: ;
+    @media only screen and (max-width: 600px) {
+        margin-left: 10px;
+        margin-right: 10px;
     }
+
+    & .description {
+        text-align: center;
+        font-size: 0.6em;
+        padding: 5px 15px 15px 15px;
+        color: rgb(172, 172, 172);
+    } 
 
     & .divider {
         height: 1px;
         width: 95%;
         // flex-grow: 1;
         background-color: #414141;
+    }
+
+    & .header {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        & span {
+            height: 20px;
+            width: 20px;
+            margin-left: 8px;
+            display: inline-block;
+            background-size: cover;
+            background-image: url('/public/icons/recycle-bin-grey.svg');
+            &:hover {
+                background-image: url('/public/icons/recycle-bin-red.svg');
+            }
+        }
     }
 
     transition: transform .2s;
@@ -127,7 +184,6 @@ body, a, p, h1, h2, h3, span, textarea, label, button {
         cursor: pointer;
         border-radius: 8px;
     }
-    // height: 200px;
 }
 
 .new-board-container {
@@ -163,4 +219,40 @@ p {
 .posts {
     display: flex;
     flex-direction: column;
+}
+
+
+#customConfirmBox {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 20%;
+    min-height: 10%;
+    z-index: 100;
+    color: white;
+
+    & .confirm-content {
+        background-color: #272727;
+        padding: 20px;
+        border-radius: 5px;
+        border: 1px solid #8B4A4A;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 5px;
+        & div {
+            gap: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            display: flex;
+            & button {
+                color: black;
+            }
+        }
+    }
 }

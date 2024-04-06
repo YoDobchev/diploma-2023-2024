@@ -12,11 +12,9 @@ Board.get('/:board', async (req, res) => {
     const board = await Boards.findOne({ where: { id: board_id } });
 
     if (!board) {
-      res
+      return res
         .status(404)
-        .render('error.ejs', { code: 404, message: "Board not found!"})
-
-      return;
+        .render('error.ejs', { code: 404, message: 'Board not found!', link: '/'})
     }
     const threads = await findThreads(board_id);
     res.render('board.ejs', { board: board_id, threads: threads, user: req.session.username })
@@ -39,6 +37,16 @@ Board.post('/:board', async (req, res) => {
 
   setTimeout(() => deleteThread(threadId), 24 * 60 * 60 * 1000);
   res.status(200).send("Thread created successfully");
+});
+
+Board.delete('/:board', async (req, res) => {
+  const { threadId } = req.body;
+  try {
+    await deleteThread(threadId, req.session.username);
+  } catch(err) {
+    console.log(err);
+  }
+  res.status(200).json();
 });
 
 export default Board;

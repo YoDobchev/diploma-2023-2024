@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    background-color: #303030;
+}
+
+p, a, h1, h2, h3, span, textarea {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "slnt" 0;
+    color: white;
+}
+
+#error-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    & .main {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        & .not-found-icon {
+            margin-right: 5px;
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background-size: cover;
+            background-image: url('/public/icons/error.svg');
+        }
+    }
+    & h1 {
+        margin: 0;
+        font-size: 3em;
+    }
+
+    & h2 {
+        margin: 0;
+    }
+
+    & h3, a {
+        margin-top: 10px;
+        color: #585858;
+    }
+
+}

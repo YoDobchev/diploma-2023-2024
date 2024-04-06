@@ -12,7 +12,7 @@ p {
     margin: 0;
 }
 
-p, a, h1, h2, h3, span, textarea {
+p, a, h1, h2, h3, input, span, textarea {
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
     // font-weight: <weight>;
@@ -52,6 +52,30 @@ input::-webkit-inner-spin-button {
     bottom: 0;
     background-color: rgba(0,0,0,0.7);
     z-index: 1;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #272727;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #8B4A4A;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 100;
+    & p{
+        text-align: center;
+    }
+    & a {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    &.hide {
+        opacity: 0;
+    }
 }
 
 #customConfirmBox {
@@ -100,7 +124,7 @@ input::-webkit-inner-spin-button {
         background: #FFC3BA;
         cursor: pointer;
     }
-    
+
     & input[type="range"] {
         -webkit-appearance: none;
         // width: 100%;
@@ -110,7 +134,7 @@ input::-webkit-inner-spin-button {
         flex: 1 0 auto;
         margin: 0 10px;
     }
-      
+
     & input[type="range"]::-webkit-slider-thumb {
         @include range-input;
     }
@@ -137,6 +161,15 @@ input::-webkit-inner-spin-button {
     display: none;
     flex-direction: column;
     height: 80vh;
+    box-sizing: border-box;
+
+    @media only screen and (max-width: 600px) {
+        width: 100vw;
+        top: 60px;
+        left: 0;
+        transform: none;
+        height: calc(100vh - 60px);
+    }
     & .modal-nav {
         // width: 30px;
         // height: 30px;
@@ -161,6 +194,12 @@ input::-webkit-inner-spin-button {
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         box-sizing: border-box;
+        @media only screen and (max-width: 600px) {
+            flex-direction: column;
+            gap: 0;
+            padding-left: 0;
+            padding-right: 0;
+        }
         & .vertical-hr {
             border: 0;
             height: 100%;
@@ -276,10 +315,11 @@ input::-webkit-inner-spin-button {
             &.blur {
                 filter: blur(20px);
             }
-            // min-height: 100%;
-            // max-height: 50vh;
             max-width: 100%;
             max-height: 100%;
+            @media only screen and (max-width: 600px) {
+                max-height: 50vh;
+            }
         }
     }
 }
@@ -315,11 +355,10 @@ input::-webkit-inner-spin-button {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     align-items: center;
-    // & p {
-    // }
     & .image-block {
         background-color: #272727;
         width: 95%;
+        max-height: 400px;
         padding: 10px;
         box-sizing: border-box;
         -moz-box-sizing: border-box;
@@ -428,6 +467,10 @@ input::-webkit-inner-spin-button {
             margin-right: 10px;
             cursor: pointer;
             display: inline-block;
+            @media only screen and (max-width: 600px) {
+                width: 20px;
+                height: 20px;
+            }
         }
         & .heart {
             background-image: url('/public/icons/heart.svg');
@@ -483,8 +526,8 @@ input::-webkit-inner-spin-button {
         flex-direction: row;
         & .remove-img {
             cursor: pointer;
-            width: 10px;
-            height: 10px;
+            width: 15px;
+            height: 15px;
             background-image: url('/public/icons/close-black.svg');
             background-size: cover;
         }
@@ -500,6 +543,7 @@ input::-webkit-inner-spin-button {
     // margin-right: 20px;
     & .post-text {
         color: white;
+        word-break: break-all;
     }
 }
 
@@ -518,10 +562,21 @@ input::-webkit-inner-spin-button {
 
 .username {
     color: #FFFFFF;
+    & username {
+        color: #FFC3BA;
+    }
+
+    @media only screen and (max-width: 600px) {
+        font-size: 1em;
+    }
 }
+
 .date {
     color: #717171;
     margin-left: 8px;
+    @media only screen and (max-width: 600px) {
+        font-size: 1em;
+    }
 }
 
 $image-dimensions: 100px;
@@ -570,33 +625,22 @@ $image-dimensions: 100px;
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        @media only screen and (max-width: 600px) {
+            width: 30px;
+            height: 30px;
+            margin-right: 4px;
+
+        }
     }
     & span {
         display: inline-block;
-        background-image: url('/public/icons/plus.svg');
+        background-image: url('/public/icons/expand.svg');
         background-size: cover;
         width: 30px;
         height: 30px;
+        @media only screen and (max-width: 600px) {
+            width: 20px;
+            height: 20px;
+        }
     }
 }
-
-// $new-post-container-height: 35vh;
-// #new-post-container {
-//     border-top: 1px solid red;
-//     background-color: aqua;
-//     width: 100%;
-//     height: $new-post-container-height;
-//     position: fixed;
-//     top: calc(100vh - $new-post-container-height);
-//     left: 0;
-//     display: flex;
-//     align-items: center;
-//     flex-direction: row;
-//     overflow-y: auto;
-//     & div {
-//         display: flex;
-//         flex-direction: column;
-//         align-items: center;
-//         width: calc(100% /3);
-//     }
-// }

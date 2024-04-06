@@ -4,6 +4,7 @@ import fs from 'fs';
 import Threads from "../models/Threads.model"
 import Posts from "../models/Posts.model"
 import Images from "../models/Images.model";
+import Boards from "../models/Boards.model";
 
 export function createPost(thread_id: string, text: string, created_by?: string, reply_to_id?: string, imageId?: string, imagePath?: string): Promise<Posts> {
     return db.transaction(async (transaction) => {
@@ -46,6 +47,10 @@ export async function deletePost(postId: string, sessionUsername?: string, trans
           whereClause['created_by'] = sessionUsername;
       }
 
+      // if (!transaction) {
+      //   transaction = await db.transaction();
+      // }
+
       const post = await Posts.findOne({ where: whereClause, transaction });
       if (!post) {
           throw new Error('Post not found or unauthorized');
@@ -86,6 +91,7 @@ async function deleteRepliesAndImages(parentId: string, transaction?: Transactio
   }
 }
 
+
 export function findThreads(board_id: string): Promise<Threads[]> {  
   return Threads.findAll({
     where: { board_id },
@@ -105,27 +111,37 @@ export function findThreads(board_id: string): Promise<Threads[]> {
   });
 }
 
-export async function deleteThread(threadId: string): Promise<void> {
-    const transaction = await db.transaction();
+
+export async function deleteThread(threadId: string, username?: string, transaction?: Transaction): Promise<void> {
+    const Thread = await Threads.findOne({where: {id: threadId}});
+    if (!Thread) {
+      throw new Error('Thread not found!');
+    }
+
+    if (!username && (username !== Thread.created_by || username !== 'admin')) {
+      throw new Error('Unauthorized request');
+    }
+
+    // if (!transaction) {
+    //   transaction = await db.transaction();
+    // }
     try {
         const posts = await Posts.findAll({
           // @ts-ignore
             where: { thread_id: threadId, reply_to_id: null },
             transaction
         });
+        // console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+        // console.log(posts)
 
         for (const post of posts) {
             await deletePost(post.id, undefined, transaction);
         }
 
-        await Threads.destroy({
-            where: { id: threadId },
-            transaction
-        });
-
-        await transaction.commit();
+        await Thread.destroy({ transaction })
+        // await transaction.commit();
     } catch (error) {
-        await transaction.rollback();
+        // await transaction.rollback();
         console.error('Failed to delete thread and associated posts:', error);
         throw error;
     }
@@ -134,7 +150,7 @@ export async function deleteThread(threadId: string): Promise<void> {
 export const setupTimers = async (): Promise<void> => {
   try {
     const rows = await Threads.findAll();
-    
+
     const now = new Date().getTime();
 
     rows.forEach(row => {
@@ -145,7 +161,7 @@ export const setupTimers = async (): Promise<void> => {
       const timeUntilAction = duration - timeSinceCreation;
       console.log(timeUntilAction)
       if (timeUntilAction > 0) {
-        setTimeout(() => deleteThread(row.id), timeUntilAction);
+        setTimeout(() => deleteThread(row.id, 'admin'), timeUntilAction);
       }
 
       else {
@@ -157,6 +173,26 @@ export const setupTimers = async (): Promise<void> => {
   }
 };
 
+export async function deleteBoard(boardId: string, username: string | undefined) {
+  // if 
+  if (!username || username != 'admin') {
+    throw new Error('Unathorized request')
+  }
+  
+  // const transaction = await db.transaction();
+  try {
+    const threads = await Threads.findAll({ where: {board_id: boardId} });
+
+    await Promise.all(threads.map(thread => deleteThread(thread.id, username)));
+
+    await Boards.destroy({where: {id: boardId}});
+    // await transaction.commit();
+  } catch (error) {
+    // await transaction.rollback();
+    console.error('Failed to delete boar and associated threads:', error);
+    throw error;
+  }
+}
 
 function generateId() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

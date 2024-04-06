@@ -5,17 +5,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/public/styles/home.css">
-    <title>Home</title>
+    <link rel="shortcut icon" href="/public/icons/icon.svg" type="image/x-icon">
+    <title>Home | LensBrew</title>
 </head>
 <body>
     <%- include('partials/navbar') %>
+    <div class="banner">
+        <span class="logo"></span>
+        <h1>LensBrew</h1>
+    </div>
+    <% if (user == 'admin') { %>
+        <div id="customConfirmBox">
+            <div class="confirm-content">
+                <p id="confirmQuestion">Do you want to proceed?</p>
+                <div>
+                    <button onclick="handleConfirm(true)">Confirm</button>
+                    <button onclick="handleConfirm(false)">Cancel</button>
+                </div>
+            </div>
+        </div>
+    <% } %>
     <div class="boards">
         <% boards.forEach((board) => { %>
-            <div class="board" onclick="window.location='/<%= board.id %>'">
-                <p><%= board.id %></p>
-                <div class="divider"></div>
-                <p class="description"><%= board.description %></p>
-            </div>
+            <a href="/<%= board.id %>">
+                <div class="board">
+                    <div class="header">
+                        <p><%= board.id %></p>
+                        <% if (user == 'admin') { %>
+                            <span class="delete-board-icon" boardId="<%= board.id %>"></span>
+                        <% } %>
+                    </div>
+                    <div class="divider"></div>
+                    <p class="description"><%= board.description %></p>
+                </div>
+            </a>
         <% }); %>
     </div>
     <% if (user == 'admin') { %>
@@ -27,7 +50,7 @@
                 <textarea name="" id="new-title" placeholder="Title"></textarea>
                 <p>Description</p>
                 <textarea name="" id="new-description" rows="5" placeholder="Description"></textarea>
-                <button id="new-board-button">Create Thread</button>
+                <button id="new-board-button">Create Board</button>
             </div>
             <div class="new-board-icon">
                 <span></span>
@@ -37,6 +60,44 @@
             document.querySelector('.new-board-icon').addEventListener('click', () => {
                 document.querySelector('.new-board-icon').style.display = 'none';
                 document.querySelector('.new-container').style.display = 'flex';
+            });
+
+            function showConfirm(question, callback) {
+                document.getElementById('confirmQuestion').innerText = question;
+                document.getElementById('customConfirmBox').style.display = 'flex';
+                confirmCallback = callback;
+            }
+
+            function handleConfirm(isConfirmed) {
+                document.getElementById('customConfirmBox').style.display = 'none';
+                if (isConfirmed && typeof confirmCallback === 'function') {
+                    confirmCallback();
+                }
+                confirmCallback = null;
+            }
+
+            document.querySelectorAll('.delete-board-icon').forEach(deleteBtn => {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showConfirm('Are you sure you want to delete this board?', () => {
+                        const data = {
+                            boardId: deleteBtn.getAttribute('boardId')
+                        }
+                        fetch('/', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(res => {
+                            if (res.status == 200) {
+                                location.reload();
+                            }
+                        });
+                    });
+                });
             });
 
             document.getElementById('new-board-button').addEventListener('click', () => {

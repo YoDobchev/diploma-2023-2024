@@ -34,7 +34,6 @@ function extractImages(posts) {
             post.images.forEach(image => {
                 images.push({postId: post.id, imagePath: image.path, imageId: image.id});
             });
-            // If there are replies, go through them recursively
             if (post.replies && post.replies.length) {
                 recurseThroughPosts(post.replies);
             }
@@ -56,7 +55,8 @@ const images = extractImages(nestedPosts);
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/public/styles/thread.css">
-    <title>Document</title>
+    <link rel="shortcut icon" href="/public/icons/icon.svg" type="image/x-icon">
+    <title><%= threadTitle %> | LensBrew</title>
 </head>
 <body>
     <%- include('partials/navbar') %>
@@ -70,6 +70,11 @@ const images = extractImages(nestedPosts);
                 <button onclick="handleConfirm(false)">Cancel</button>
             </div>
         </div>
+    </div>
+
+    <div id="popup" class="popup hide">
+        <p>
+        </p>
     </div>
 
     <div class="image-modal">
@@ -242,16 +247,199 @@ const images = extractImages(nestedPosts);
             input.style.background = 'linear-gradient(to right, #FFC3BA ' + value + '%, #4B4B4B ' + value + '%)';
         }
 
+
         document.querySelector('.filter-settings-start').addEventListener('click', () => {
-            if (!isFilteringEnabled) {
-                enableFiltering();
-                return;
-            }
-            showConfirm('Disgard new post?', enableFiltering);
+            <% if (user) { %>
+                if (!isFilteringEnabled) {
+                    enableFiltering();
+                    return;
+                }
+                showConfirm('Disgard new post?', enableFiltering);
+            <% } else { %>
+                showPopup(`<a onclick="document.querySelector('.loginBtn').click()">Login</a> to use this feature!`);
+            <% } %>
         });
+
+        const createNewPost = (id, name) => {
+            const oldNewPost = document.querySelector('.new-post-container');
+            if (oldNewPost) {
+                oldNewPost.parentNode.removeChild(oldNewPost);
+            }
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post new-post-container';
+
+            const postContentDiv = document.createElement('div');
+            postContentDiv.className = 'post-content';
+
+            const postHeaderDiv = document.createElement('div');
+            postHeaderDiv.className = 'post-header';
+            if (name) {
+                const usernameH2 = document.createElement('h2');
+                usernameH2.className = 'username';
+                usernameH2.innerHTML = `Replying to <username>${name}</username>...`;
+                postHeaderDiv.appendChild(usernameH2);
+            }
+
+            const textarea = document.createElement('textarea');
+            textarea.placeholder = 'Type something...';
+            textarea.className = 'new-post-text';
+            textarea.required = true;
+            textarea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight - 10) + 'px';
+            });
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'new-post-image-container'
+
+            const hr = document.createElement('hr');
+
+            const iconBarDiv = document.createElement('div');
+            iconBarDiv.className = 'icon-bar';
+            const imageInput = document.createElement('input');
+            imageInput.type = 'file';
+            imageInput.id = 'image-input';
+            imageInput.name = 'image-input';
+            imageInput.accept = 'image/gif, image/png, image/jpeg';
+            const label = document.createElement('label');
+            label.setAttribute('for', 'image-input');
+            label.id = 'image-icon';
+            const imageSelectionSpan = document.createElement('span');
+            imageSelectionSpan.className = 'image-selection';
+
+            const uploadPost = document.createElement('span');
+            uploadPost.className = 'upload-post';
+
+            label.appendChild(imageSelectionSpan);
+            iconBarDiv.appendChild(label);
+            iconBarDiv.appendChild(uploadPost);
+            <% if (user) { %>
+                iconBarDiv.appendChild(imageInput);
+                imageInput.addEventListener('input', () => {
+                    const formData = new FormData();
+                    const file = imageInput.files[0];
+                    const generatedId = generateId();
+                    const fullName = file.name;
+                    const extension = fullName.slice(((fullName.lastIndexOf(".") - 1) >>> 0) + 2);
+                    formData.append('image', file);
+                    fetch(`<%= thread %>/upload`, {
+                        method: 'POST',
+                        headers: {
+                            'image-Filename': `${generatedId}.${extension}`,
+                        },
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error(response.status);
+                        }
+                    })
+                    .then(data => {
+                        imageId = generatedId;
+                        imageExt = extension;
+                        deployImg(data.filepath);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    })
+                });
+            <% } else { %>
+                imageSelectionSpan.addEventListener('click', () => {
+                    showPopup(`<a onclick="document.querySelector('.loginBtn').click()">Login</a> to use this feature!`);
+                });
+            <% } %>
+
+            uploadPost.addEventListener('click', () => {
+                if (textarea.value.trim() == '' && !imageId) {
+                    showPopup('Please provide a message or upload a file before proceeding with your reply.');
+                    return;
+                }
+
+                const data = {
+                    replyToId: id,
+                    text: document.querySelector('.new-post-text').value,
+                    imageId: imageId,
+                    imageExt: imageExt,
+                }
+                fetch(`<%= thread %>/createPost`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    addItemToArray('expanded', id);
+                    location.reload();
+                });
+            });
+
+            postContentDiv.appendChild(postHeaderDiv);
+            postContentDiv.appendChild(textarea);
+            postContentDiv.appendChild(imageContainer);
+            postContentDiv.appendChild(hr);
+            postContentDiv.appendChild(iconBarDiv);
+
+            postDiv.appendChild(postContentDiv);
+
+            const repliesContainer = document.querySelector(`[id="${id}-replies"]`) ? document.querySelector(`[id="${id}-replies"]`) : document.querySelector('.posts');
+            repliesContainer.style.display = 'block';
+            if (document.querySelector(`[id="${id}"] .expand span`)) {
+                document.querySelector(`[id="${id}"] .expand span`).style.backgroundImage = 'url("/public/icons/minimize-sign.svg")';
+            }
+            if (!repliesContainer.classList.contains('posts')) {
+                const currentMarginLeft = parseInt(document.querySelector(`[id="${id}"]`).style.marginLeft) || 0;
+                postDiv.style.marginLeft = `${currentMarginLeft + 15}px`;
+            }
+            repliesContainer.appendChild(postDiv);
+            postDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        const deployImg = (src) => {
+            document.querySelector('.image-selection').style.display = 'none';
+            const postImageDiv = document.createElement('div');
+            postImageDiv.className = 'post-image';
+            postImageDiv.id = imageId;
+            postImageDiv.setAttribute('onclick', 'focusImage(this)');
+            const img = document.createElement('img');
+            img.className = 'post-image-src new-post-image-src';
+            img.src = src;
+            img.alt = '';
+            const span = document.createElement('span');
+            span.className = 'focus-image';
+
+            postImageDiv.appendChild(img);
+            postImageDiv.appendChild(span);
+            const container = document.querySelector('.new-post-image-container');
+            const removeImg = document.createElement('span');
+            removeImg.className = 'remove-img';
+            removeImg.addEventListener('click', () => {
+                sendRemoveImgReq();
+            });
+
+            container.appendChild(postImageDiv);
+            container.appendChild(removeImg);
+        }
+
+        const resetSliderValues = () => {
+            document.querySelectorAll('.filter-container').forEach(filter => {
+                const input = filter.querySelector('input');
+                input.value = 0;
+                changeRangeInputGradient(input);
+                for (var key in filterSettings) {
+                    if (filterSettings.hasOwnProperty(key)) {
+                        filterSettings[key].value = filterSettings[key].defaultValue;
+                    }
+                }
+            });
+        }
 
         const enableFiltering = () => {
             isFilteringEnabled = true;
+            resetSliderValues();
             // console.log(imageId)
 
             if (!imageId || currentlyReviewingId != imageId) {
@@ -370,9 +558,22 @@ const images = extractImages(nestedPosts);
                 document.querySelector('.model-filter-settings').appendChild(filterDiv);
             }
         }
-        // filterSettings.forEach((setting, index) => {
-        //     const includeHr = index !== filterSettings.length - 1;
-        // });
+        const showPopup = (text) => {
+            const popup = document.getElementById('popup');
+            popup.querySelector('p').innerHTML = text;
+            const duration = 3000;
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.classList.remove('hide');
+            }, 10);
+
+            setTimeout(() => {
+                popup.classList.add('hide');
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 500);
+            }, duration);
+        }
 
         const openModal = (id) => {
             // console.log(isFilteringEnabled)
@@ -421,6 +622,10 @@ const images = extractImages(nestedPosts);
         const expandPost = (id, shouldOnlyExpand) => {
             const repliesSectionId = `${id}-replies`;
             const repliesSection = document.getElementById(repliesSectionId);
+            if (!repliesSection) {
+                removeItemFromArray('expanded', id);
+                return;
+            }
             const expandBtn = document.getElementById(id).querySelector('.expand').querySelector('span');
 
             if (shouldOnlyExpand) {
@@ -432,8 +637,8 @@ const images = extractImages(nestedPosts);
             repliesSection.style.display === 'block' ? removeItemFromArray('expanded', id) : addItemToArray('expanded', id); 
             repliesSection.style.display = repliesSection.style.display === 'block' ? 'none' : 'block';
             expandBtn.style.backgroundImage = repliesSection.style.display === 'block' 
-                ? 'url("/public/icons/minimize-sign.svg")'
-                : 'url("/public/icons/plus.svg")';
+                ? 'url("/public/icons/shrink.svg")'
+                : 'url("/public/icons/expand.svg")';
         }
 
         getArrayFromQueryString('expanded').forEach(postId => {
@@ -521,32 +726,6 @@ const images = extractImages(nestedPosts);
             });
         });
 
-        const deployImg = (src) => {
-            document.querySelector('.image-selection').style.display = 'none';
-            const postImageDiv = document.createElement('div');
-            postImageDiv.className = 'post-image';
-            postImageDiv.id = imageId;
-            postImageDiv.setAttribute('onclick', 'focusImage(this)');
-            const img = document.createElement('img');
-            img.className = 'post-image-src new-post-image-src';
-            img.src = src;
-            img.alt = '';
-            const span = document.createElement('span');
-            span.className = 'focus-image';
-
-            postImageDiv.appendChild(img);
-            postImageDiv.appendChild(span);
-            const container = document.querySelector('.new-post-image-container');
-            const removeImg = document.createElement('span');
-            removeImg.className = 'remove-img';
-            removeImg.addEventListener('click', () => {
-                sendRemoveImgReq();
-            });
-
-            container.appendChild(postImageDiv);
-            container.appendChild(removeImg);
-        }
-
         const sendRemoveImgReq = () => {
             document.querySelector('.new-post-image-container').innerHTML = '';
             const data = {
@@ -564,126 +743,6 @@ const images = extractImages(nestedPosts);
             imageExt = undefined;
             isFilteringEnabled = false;
             document.querySelector('.image-selection').style.display = 'inline-block';
-        }
-
-        const createNewPost = (id, name) => {
-            const oldNewPost = document.querySelector('.new-post-container');
-            if (oldNewPost) {
-                oldNewPost.parentNode.removeChild(oldNewPost);
-            }
-            const postDiv = document.createElement('div');
-            postDiv.className = 'post new-post-container';
-
-            const postContentDiv = document.createElement('div');
-            postContentDiv.className = 'post-content';
-
-            const postHeaderDiv = document.createElement('div');
-            postHeaderDiv.className = 'post-header';
-            if (name) {
-                const usernameH2 = document.createElement('h2');
-                usernameH2.className = 'username';
-                usernameH2.textContent = `Replying to ${name}...`;
-    
-                postHeaderDiv.appendChild(usernameH2);
-            }
-
-            const textarea = document.createElement('textarea');
-            textarea.placeholder = 'Type something...';
-            textarea.className = 'new-post-text';
-            textarea.required = true;
-            textarea.addEventListener('input', function () {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight - 10) + 'px';
-            });
-
-            const imageContainer = document.createElement('div');
-            imageContainer.className = 'new-post-image-container'
-
-            const hr = document.createElement('hr');
-
-            const iconBarDiv = document.createElement('div');
-            iconBarDiv.className = 'icon-bar';
-            const imageInput = document.createElement('input');
-            imageInput.type = 'file';
-            imageInput.id = 'image-input';
-            imageInput.name = 'image-input';
-            imageInput.accept = 'image/gif, image/png, image/jpeg';
-            const label = document.createElement('label');
-            label.setAttribute('for', 'image-input');
-            label.id = 'image-icon';
-            const imageSelectionSpan = document.createElement('span');
-            imageSelectionSpan.className = 'image-selection';
-
-            const uploadPost = document.createElement('span');
-            uploadPost.className = 'upload-post';
-
-            label.appendChild(imageSelectionSpan);
-            iconBarDiv.appendChild(imageInput);
-            iconBarDiv.appendChild(label);
-            iconBarDiv.appendChild(uploadPost);
-
-            imageInput.addEventListener('input', () => {
-                const formData = new FormData();
-                const file = imageInput.files[0];
-                const generatedId = generateId();
-                const fullName = file.name;
-                const extension = fullName.slice(((fullName.lastIndexOf(".") - 1) >>> 0) + 2);
-                formData.append('image', file);
-                // formData.append('filename', `${generatedId}.${extension}`);
-                fetch(`<%= thread %>/upload`, {
-                    method: 'POST',
-                    headers: {
-                        'image-Filename': `${generatedId}.${extension}`,
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    imageId = generatedId;
-                    imageExt = extension;
-                    deployImg(data.filepath);
-                });
-            });
-
-            uploadPost.addEventListener('click', () => {
-                const data = {
-                    replyToId: id,
-                    text: document.querySelector('.new-post-text').value,
-                    imageId: imageId,
-                    imageExt: imageExt,
-                }
-                fetch(`<%= thread %>/createPost`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    location.reload();
-                });
-            });
-
-            postContentDiv.appendChild(postHeaderDiv);
-            postContentDiv.appendChild(textarea);
-            postContentDiv.appendChild(imageContainer);
-            postContentDiv.appendChild(hr);
-            postContentDiv.appendChild(iconBarDiv);
-
-            postDiv.appendChild(postContentDiv);
-
-            const repliesContainer = document.querySelector(`[id="${id}-replies"]`) ? document.querySelector(`[id="${id}-replies"]`) : document.querySelector('.posts');
-            // console.log(repliesContainer)
-            repliesContainer.style.display = 'block';
-            if (document.querySelector(`[id="${id}"] .expand span`)) {
-                document.querySelector(`[id="${id}"] .expand span`).style.backgroundImage = 'url("/public/icons/minimize-sign.svg")';
-            }
-            if (!repliesContainer.classList.contains('posts')) {
-                const currentMarginLeft = parseInt(document.querySelector(`[id="${id}"]`).style.marginLeft) || 0;
-                postDiv.style.marginLeft = `${currentMarginLeft + 15}px`;
-            }
-            repliesContainer.appendChild(postDiv);
         }
     </script>
 </body>

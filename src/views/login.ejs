@@ -5,7 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/public/styles/auth.css">
-    <title>Login</title>
+    <link rel="shortcut icon" href="/public/icons/icon.svg" type="image/x-icon">
+    <title>Login | LensBrew</title>
 </head>
 <body>
     <div class="icons"></div>
@@ -14,7 +15,7 @@
         <div class="credentials">
             <div class="block">
                 <label class="label">Username</label>
-                <input type="text" name="" id="username" placeholder="Username">
+                <input type="text" name="" id="username" maxlength="15" placeholder="Username">
             </div>
             <div class="block">
                 <label class="label">Password</label>
@@ -59,12 +60,12 @@
             const error_container = document.getElementById('errors');
             error_container.innerHTML = '';
             if (!AreloginDetailsCorrect()) return;
-            
+
             const data = {
                 username: document.getElementById('username').value,
                 password: document.getElementById('password').value,
             }
-            
+
             const res = await fetch('/login', {
                 method: 'POST',
                 headers: {

@@ -2,18 +2,31 @@
 
 <div class="navbar">
     <div class="navbar-navigation">
-        <span class="location" onclick="window.location='/'">home</span>
+        <a href="/">
+            <span class="location">HOME</span>
+        </a>
         <% var safeBoard = typeof board !== 'undefined' ? board : null; %>
         <% if (safeBoard) { %>
             <span>/</span>
-            <span class="location" onclick="window.location='/<%= board %>'"><%= board %></span>
+            <a href="/<%= board %>">
+                <span class="location"><%= board %></span>
+            </a>
         <% } %>
         <% var safeThread = typeof thread !== 'undefined' ? thread : null; %>
         <% if (safeBoard && safeThread) { %>
             <span>/</span>
-            <span class="location" onclick="window.location='/<%= board %>/<%= thread %>'"><%= thread %></span>
+            <a href="/<%= board %>/<%= thread %>">
+                <span class="location"><%= thread %></span>
+            </a>
         <% } %>
     </div>
+    <% var safeThreadTitle = typeof threadTitle !== 'undefined' ? thread : null; %>
+    <% if (safeThreadTitle) { %>
+        <div class="thread-title">
+            <span class="thread-icon"></span>
+            <h2><%= threadTitle %></h2>
+        </div>
+    <% } %>
     <div class="profile">
         <div class="profile-toggle">
             <p><%= user ? user : 'Anonymous' %></p>
@@ -28,7 +41,7 @@
                 <a href="/logout?redirect=<%= redirectUrl %>">Logout</a>
                 <% } else { %>
                     <a href="/register?redirect=<%= redirectUrl %>">Register</a>
-                    <a href="/login?redirect=<%= redirectUrl %>">Login</a>
+                    <a class="loginBtn" href="/login?redirect=<%= redirectUrl %>">Login</a>
                 <% } %>
             </div>
         </div>
