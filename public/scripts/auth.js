@@ -11,7 +11,7 @@ async function loadAndPlaceSVGs() {
       const svgText = await response.text();
       const maxIcons = Math.max(
         1,
-        Math.floor((window.innerWidth / 500) * Math.random() * 5)
+        Math.floor((window.innerWidth / 500) * Math.random() * 2)
       );
       for (let j = 0; j < maxIcons; ++j) {
         placeSVG(svgText);

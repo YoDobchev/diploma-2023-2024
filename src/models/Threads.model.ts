@@ -16,11 +16,11 @@ class Threads extends Model<Threads> {
     allowNull: false
   })
   declare id: string;
-  
+
   @ForeignKey(() => Boards)
   @Column({
     type: DataType.STRING,
-    allowNull: false    
+    allowNull: false
   })
   declare board_id: string;
 

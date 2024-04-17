@@ -6,7 +6,6 @@ body {
 body, p, h1, h2, h3, span, textarea, label, button {
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
-    // font-weight: <weight>;
     font-style: normal;
     font-variation-settings:
       "slnt" 0;
@@ -23,7 +22,6 @@ body, p, h1, h2, h3, span, textarea, label, button {
     transform: translate(-50%, -50%);
     .svg-container {
         position: absolute;
-        // visibility: hidden;
         will-change: transform;
         & svg {
             width: 80px;
@@ -119,7 +117,6 @@ body, p, h1, h2, h3, span, textarea, label, button {
         display: inline-block;
         background-color: #303030;
         color: white;
-        // width: 100%;
         border: 0;
         border-radius: 3px;
         padding: 6px;
@@ -138,7 +135,6 @@ body, p, h1, h2, h3, span, textarea, label, button {
         width: 100%;
         background-color: #c49c95;
         border: 0;
-        // color: black;
         padding: 8px 12px;
         cursor: pointer;
         border-radius: 8px;

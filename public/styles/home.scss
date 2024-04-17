@@ -5,7 +5,6 @@ body {
 body, a, p, h1, h2, h3, span, textarea, label, button {
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
-    // font-weight: <weight>;
     font-style: normal;
     font-variation-settings:
       "slnt" 0;
@@ -85,7 +84,6 @@ a {
     & .divider {
         height: 1px;
         width: 95%;
-        // flex-grow: 1;
         background-color: #414141;
     }
 
@@ -156,13 +154,16 @@ a {
             color: #FFC3BA;
         }
     }
+
+    & .reminder {
+        color: #FFC3BA;
+    }
+
     & p {
         margin: 0;
         margin-top: 15px;
     }
-    // & p:nth-child(3) {
-    //     margin-top: 20px;
-    // }
+
     & textarea {
         margin-top: 10px;
         background-color: transparent;
@@ -183,6 +184,11 @@ a {
         padding: 8px 12px;
         cursor: pointer;
         border-radius: 8px;
+        transition: background-color 500ms linear;
+        &:hover {
+            background-color: #bd847a;
+            transition: background-color 500ms linear;
+        }
     }
 }
 

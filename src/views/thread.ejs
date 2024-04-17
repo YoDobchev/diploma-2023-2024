@@ -120,13 +120,12 @@ const images = extractImages(nestedPosts);
                     <%
                         if (post.images.length > 0) {
                     %>
-                    <div class="post-image-container">
-                        <div class="post-image" onclick="focusImage(this)">
-                        <img class="post-image-src" src="/<%= post.images[0].path %>" id="<%= post.images[0].id %>">
-                        <span class="focus-image"></span>
-                    </div>
-                    </div>
-
+                        <div class="post-image-container">
+                            <div class="post-image" onclick="focusImage(this)">
+                            <img class="post-image-src" src="/<%= post.images[0].path %>" id="<%= post.images[0].id %>">
+                            <span class="focus-image"></span>
+                        </div>
+                        </div>
                     <%
                         }
                     %>
@@ -140,13 +139,13 @@ const images = extractImages(nestedPosts);
                         <span class="reply"></span>
                     </div>
                 </div>
-                <% if (post.replies && post.replies.length > 0) {%>
-                <div class="expand">
-                    <div>
-                        <span></span>
+                <% if (post.replies && post.replies.length > 0) { %>
+                    <div class="expand">
+                        <div>
+                            <span></span>
+                        </div>
                     </div>
-                </div>
-                <%}%>
+                <% } %>
             </div>
                 <div class="replies-container" id="<%= post.id %>-replies">
                 <% if (post.replies && post.replies.length > 0) { %>
@@ -388,7 +387,7 @@ const images = extractImages(nestedPosts);
             const repliesContainer = document.querySelector(`[id="${id}-replies"]`) ? document.querySelector(`[id="${id}-replies"]`) : document.querySelector('.posts');
             repliesContainer.style.display = 'block';
             if (document.querySelector(`[id="${id}"] .expand span`)) {
-                document.querySelector(`[id="${id}"] .expand span`).style.backgroundImage = 'url("/public/icons/minimize-sign.svg")';
+                document.querySelector(`[id="${id}"] .expand span`).style.backgroundImage = 'url("/public/icons/shrink.svg")';
             }
             if (!repliesContainer.classList.contains('posts')) {
                 const currentMarginLeft = parseInt(document.querySelector(`[id="${id}"]`).style.marginLeft) || 0;
@@ -448,8 +447,6 @@ const images = extractImages(nestedPosts);
                 const lastDotIndex = url.lastIndexOf('.');
                 const uuid = url.slice(lastSlashIndex + 1, lastDotIndex);
                 const extension = url.slice(lastDotIndex + 1);
-                // console.log(uuid)
-                // console.log(document.querySelector(`[id="${uuid}"]`).closest('.post'))
 
                 const newId = generateId();
                 const data = {
@@ -517,7 +514,6 @@ const images = extractImages(nestedPosts);
                     changeRangeInputGradient(input)
                     return;
                 }
-                // isCurrentlyExpectingFiltered = true;
                 filterSettings[filterSetting.label].value = parseInt(input.value);
                 const data = {
                     filterSettings: filterSettings,
@@ -576,11 +572,7 @@ const images = extractImages(nestedPosts);
         }
 
         const openModal = (id) => {
-            // console.log(isFilteringEnabled)
-            // console.log(imageId)
             currentlyReviewingId = id;
-            // console.log(currentlyReviewingId)
-            // console.log(isFilteringEnabled && imageId == currentlyReviewingId)
 
             if (isFilteringEnabled && imageId == currentlyReviewingId) {
                 document.querySelector('.image-filtering-prompt').style.display = 'none';
@@ -602,8 +594,6 @@ const images = extractImages(nestedPosts);
             document.querySelector('.overlay').style.display = 'block';
             modal.style.display = 'flex';
             modal.querySelector('img').src = div.firstElementChild.src;
-            // console.log("aaa")
-            // console.log(div.firstElementChild.id)
             openModal(div.id);
         }
 
@@ -631,7 +621,7 @@ const images = extractImages(nestedPosts);
             if (shouldOnlyExpand) {
                 addItemToArray('expanded', id);
                 repliesSection.style.display = 'block';
-                expandBtn.style.backgroundImage = 'url("/public/icons/minimize-sign.svg")';
+                expandBtn.style.backgroundImage = 'url("/public/icons/shrink.svg")';
                 return;
             }
             repliesSection.style.display === 'block' ? removeItemFromArray('expanded', id) : addItemToArray('expanded', id); 
@@ -681,7 +671,6 @@ const images = extractImages(nestedPosts);
 
         document.querySelectorAll('.reply').forEach(reply_btn => {
             reply_btn.addEventListener('click', () => {
-                // isFilteringEnabled = false;
                 reply(
                     reply_btn.closest('.post').id, 
                     reply_btn.closest('.post').querySelector('.username').innerHTML

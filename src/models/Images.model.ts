@@ -28,14 +28,8 @@ class Images extends Model<Images> {
   })
   declare path: string;
 
-  @Column({ 
-    type: DataType.ARRAY(DataType.INTEGER),
-    allowNull: false
-  })
-  declare filters: number[];
-
   @BelongsTo(() => Posts)
   declare post: Posts;
 };
- 
+
 export default Images;

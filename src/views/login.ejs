@@ -43,7 +43,7 @@
             error_container.appendChild(p);
         }
 
-        function AreloginDetailsCorrect() {
+        function AreLoginFieldsNotEmpty() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             if ((username == null || username == '') ||
@@ -59,7 +59,7 @@
             ev.preventDefault();
             const error_container = document.getElementById('errors');
             error_container.innerHTML = '';
-            if (!AreloginDetailsCorrect()) return;
+            if (!AreLoginFieldsNotEmpty()) return;
 
             const data = {
                 username: document.getElementById('username').value,

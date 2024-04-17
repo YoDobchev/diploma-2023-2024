@@ -1,5 +1,5 @@
-import { db } from "../init/db"
 import { Transaction } from "sequelize";
+import { db } from "../init/db"
 import fs from 'fs';
 import Threads from "../models/Threads.model"
 import Posts from "../models/Posts.model"
@@ -23,7 +23,6 @@ export function createPost(thread_id: string, text: string, created_by?: string,
                 id: imageId,
                 post_id: newPost.id,
                 path: imagePath,
-                filters: [],
             };
 
             await Images.create(imageData as Images, { transaction });
@@ -165,7 +164,7 @@ export const setupTimers = async (): Promise<void> => {
       }
 
       else {
-        deleteThread(row.id);
+        deleteThread(row.id, 'admin');
       }
     });
   } catch (error) {

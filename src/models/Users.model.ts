@@ -25,6 +25,5 @@ class Users extends Model<Users, UserAttributes> {
   })
   declare password: string;
 };
-  
-  
+
 export default Users;

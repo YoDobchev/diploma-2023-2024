@@ -42,7 +42,7 @@ Thread.get('/:thread', async (req: ThreadRequest, res) => {
     }
 
     const posts = await findPostsByThreadId(thread);
-    res.render('thread.ejs', {board: board, thread: thread, threadTitle: Thread.title, posts: posts, user: req.session.username});
+    res.render('thread.ejs', { board: board, thread: thread, threadTitle: Thread.title, posts: posts, user: req.session.username });
 });
 
 Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
@@ -56,7 +56,6 @@ Thread.post('/:thread/upload', upload.single('image'), (req, res) => {
 
     res.json({ filepath: `/public/images/temp/original/${req.headers['image-filename']}`});
 });
-
 
 Thread.patch('/:thread/filter', async (req, res) => {
     const { imageId, imageExt } = req.body;
@@ -99,7 +98,7 @@ Thread.patch('/:thread/filter', async (req, res) => {
             await image.writeAsync(outputPath);
         }
     }
-    res.json({ filepath: '/public/images/temp/filtered/' + imageId + '.' + imageExt});
+    res.json({ filepath: '/public/images/temp/filtered/' + imageId + '.' + imageExt });
 });
 
 Thread.post('/:thread/createPost', async (req, res) => {

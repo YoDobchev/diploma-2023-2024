@@ -21,5 +21,4 @@ class Boards extends Model<Boards> {
   declare description: string;
 };
 
-
 export default Boards;

@@ -35,8 +35,10 @@
                             <span class="delete-board-icon" boardId="<%= board.id %>"></span>
                         <% } %>
                     </div>
-                    <div class="divider"></div>
-                    <p class="description"><%= board.description %></p>
+                    <% if (board.description) { %>
+                        <div class="divider"></div>
+                        <p class="description"><%= board.description %></p>
+                    <% } %>
                 </div>
             </a>
         <% }); %>
@@ -103,7 +105,8 @@
             document.getElementById('new-board-button').addEventListener('click', () => {
                 const title = document.getElementById('new-title').value;
                 if (!title) {
-                    document.getElementById('new-title').classList.add('reminder');
+                    document.getElementById('new-title-p').classList.add('reminder');
+                    return;
                 }
                 const description = document.getElementById('new-description').value;
                 const data = {

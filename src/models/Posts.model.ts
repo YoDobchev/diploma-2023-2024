@@ -23,7 +23,7 @@ class Posts extends Model<Posts> {
     allowNull: false
   })
   declare thread_id: string;
-  
+
   @Column({
     type: DataType.STRING,
     allowNull: false
@@ -56,6 +56,5 @@ class Posts extends Model<Posts> {
   @BelongsTo(() => Threads)
   declare thread: Threads;
 };
-  
-  
+
 export default Posts;

@@ -60,7 +60,7 @@
             <h3>Creating a new discussion thread on the <board><%= board %></board> board...</h3>
             <div class="divider"></div>
             <p id="new-title-p">Title*</p>
-            <textarea name="" id="new-title" placeholder="Title"></textarea>
+            <textarea name="" id="new-title" placeholder="Title" maxlength="200"></textarea>
             <p>Description</p>
             <textarea name="" id="new-description" rows="5" placeholder="Description"></textarea>
             <button id="new-thread-button">Create Thread</button>
@@ -162,7 +162,8 @@
             const threadId = generateId();
             const title = document.getElementById('new-title').value;
             if (!title) {
-                document.getElementById('new-title').classList.add('reminder');
+                document.getElementById('new-title-p').classList.add('reminder');
+                return;
             }
             const description = document.getElementById('new-description').value;
             const data = {
