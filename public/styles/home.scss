@@ -2,6 +2,7 @@ body {
     background-color: #272727;
     margin: 0;
 }
+
 body, a, p, h1, h2, h3, span, textarea, label, button {
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
@@ -234,7 +235,6 @@ p {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    min-width: 20%;
     min-height: 10%;
     z-index: 100;
     color: white;

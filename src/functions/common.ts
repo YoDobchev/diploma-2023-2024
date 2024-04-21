@@ -46,10 +46,6 @@ export async function deletePost(postId: string, sessionUsername?: string, trans
           whereClause['created_by'] = sessionUsername;
       }
 
-      // if (!transaction) {
-      //   transaction = await db.transaction();
-      // }
-
       const post = await Posts.findOne({ where: whereClause, transaction });
       if (!post) {
           throw new Error('Post not found or unauthorized');
@@ -76,20 +72,19 @@ export async function deletePost(postId: string, sessionUsername?: string, trans
 async function deleteRepliesAndImages(parentId: string, transaction?: Transaction): Promise<void> {
   const replies = await Posts.findAll({ where: { reply_to_id: parentId }, transaction });
   for (const reply of replies) {
-      const images = await Images.findAll({ where: { post_id: reply.id }, transaction });
-      const imagePaths = images.map(img => img.path);
-      await Images.destroy({ where: { post_id: reply.id }, transaction });
+    const images = await Images.findAll({ where: { post_id: reply.id }, transaction });
+    const imagePaths = images.map(img => img.path);
+    await Images.destroy({ where: { post_id: reply.id }, transaction });
 
-      await deleteRepliesAndImages(reply.id, transaction);
+    await deleteRepliesAndImages(reply.id, transaction);
 
-      await Posts.destroy({ where: { id: reply.id }, transaction });
+    await Posts.destroy({ where: { id: reply.id }, transaction });
 
-      for (const path of imagePaths) {
-          await fs.promises.unlink(path);
-      }
+    for (const path of imagePaths) {
+      await fs.promises.unlink(path);
+    }
   }
 }
-
 
 export function findThreads(board_id: string): Promise<Threads[]> {  
   return Threads.findAll({
@@ -121,26 +116,19 @@ export async function deleteThread(threadId: string, username?: string, transact
       throw new Error('Unauthorized request');
     }
 
-    // if (!transaction) {
-    //   transaction = await db.transaction();
-    // }
     try {
         const posts = await Posts.findAll({
           // @ts-ignore
             where: { thread_id: threadId, reply_to_id: null },
             transaction
         });
-        // console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-        // console.log(posts)
 
         for (const post of posts) {
             await deletePost(post.id, undefined, transaction);
         }
 
         await Thread.destroy({ transaction })
-        // await transaction.commit();
     } catch (error) {
-        // await transaction.rollback();
         console.error('Failed to delete thread and associated posts:', error);
         throw error;
     }
@@ -173,21 +161,17 @@ export const setupTimers = async (): Promise<void> => {
 };
 
 export async function deleteBoard(boardId: string, username: string | undefined) {
-  // if 
   if (!username || username != 'admin') {
     throw new Error('Unathorized request')
   }
-  
-  // const transaction = await db.transaction();
+
   try {
     const threads = await Threads.findAll({ where: {board_id: boardId} });
 
     await Promise.all(threads.map(thread => deleteThread(thread.id, username)));
 
     await Boards.destroy({where: {id: boardId}});
-    // await transaction.commit();
   } catch (error) {
-    // await transaction.rollback();
     console.error('Failed to delete boar and associated threads:', error);
     throw error;
   }

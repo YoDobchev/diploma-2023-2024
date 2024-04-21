@@ -63,12 +63,6 @@ function adjustAndShowSVG(container) {
 
 function checkOverlap(x, y, width, height) {
   return placedAreas.some((area) => {
-    // return !(
-    //   x + width < area.x ||
-    //   y + height < area.y ||
-    //   x > area.x + area.width ||
-    //   y > area.y + area.height
-    // );
     return !(
       x + width + minDistance < area.x ||
       y + height + minDistance < area.y ||
@@ -76,7 +70,6 @@ function checkOverlap(x, y, width, height) {
       y > area.y + area.height + minDistance
     );
   });
-  //   });
 }
 
 loadAndPlaceSVGs();

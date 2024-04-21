@@ -1,8 +1,21 @@
-CREATE DATABASE diplomna_be;
+# Graduation project 2023/2024 | VHSE Djon Atanasov
 
+## Setup
+
+
+Install npm packages
+``` 
+$ npm i 
+```
+
+Setup postgres
+```
+CREATE DATABASE diplomna_be;
+$ psql -U postgres -d diplomna_be -f dump.sql
 CREATE ROLE dpbe_user WITH LOGIN PASSWORD 'random_password' CREATEDB;
 GRANT ALL PRIVILEGES ON DATABASE diplomna_be TO dpbe_user;
-
-CREATE ROLE dpbe_readonly WITH LOGIN PASSWORD 'other_password';
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO dpbe_readonly;
-ALTER ROLE dpbe_readonly SET statement_timeout = '2s';
+```
+Run
+```
+$ npm run dev
+```

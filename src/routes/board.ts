@@ -8,16 +8,16 @@ const Board = Router();
 Board.use('/:board', Thread);
 
 Board.get('/:board', async (req, res) => {
-    const board_id = req.params.board;
-    const board = await Boards.findOne({ where: { id: board_id } });
+  const board_id = req.params.board;
+  const board = await Boards.findOne({ where: { id: board_id } });
 
-    if (!board) {
-      return res
-        .status(404)
-        .render('error.ejs', { code: 404, message: 'Board not found!', link: '/'})
-    }
-    const threads = await findThreads(board_id);
-    res.render('board.ejs', { board: board_id, threads: threads, user: req.session.username })
+  if (!board) {
+    return res
+      .status(404)
+      .render('error.ejs', { code: 404, message: 'Board not found!', link: '/'})
+  }
+  const threads = await findThreads(board_id);
+  res.render('board.ejs', { board: board_id, threads: threads, user: req.session.username });
 });
 
 Board.post('/:board', async (req, res) => {
